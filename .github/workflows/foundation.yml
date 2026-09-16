@@ -1,0 +1,100 @@
+name: Foundation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: orvya
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d orvya"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@localhost:5432/orvya
+      APP_BASE_URL: https://app.orvya.net
+      ADMIN_BASE_URL: https://admin.orvya.net
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install backend
+        working-directory: backend
+        run: pip install .
+      - name: Apply initial migration
+        working-directory: backend
+        run: alembic upgrade head
+      - name: Verify API foundation
+        working-directory: backend
+        run: |
+          python -m compileall -q app migrations
+          python - <<'PY'
+          from fastapi.testclient import TestClient
+          from app.main import app
+
+          client = TestClient(app)
+          live = client.get('/api/v1/saude')
+          assert live.status_code == 200, live.text
+          assert live.headers.get('X-Orvya-Operation-Id')
+
+          ready = client.get('/api/v1/saude/pronto')
+          assert ready.status_code == 200, ready.text
+          assert ready.json()['schema_revision'] == '20260915_0001'
+
+          dependencies = client.get('/api/v1/saude/dependencias')
+          assert dependencies.status_code == 200, dependencies.text
+          assert dependencies.json()['banco']['estado'] == 'disponivel'
+          PY
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+      - name: Build App and Admin
+        working-directory: frontend
+        run: npm run build
+      - name: Persist initial lockfile
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+        working-directory: frontend
+        run: |
+          if git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add package-lock.json
+          git commit -m 'build: lock frontend dependencies'
+          git push
