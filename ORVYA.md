@@ -839,7 +839,7 @@ Redução de Plano não apaga dados.
 |---|---|
 | visualizar registro principal | página/ficha |
 | criar/editar/vincular | Dialog |
-| reagendar/redesignar | Dialog |
+| reagendar/alterar responsável | Dialog |
 | ação secundária | ActionMenu/Menu |
 | ação crítica | confirmação auditável |
 | objeto operacional em coleção | ListView/lista de leitura |
@@ -956,7 +956,7 @@ Aplicar ao menos a:
 - ações administrativas destrutivas;
 - desconexões externas relevantes.
 
-Edição comum, reagendamento e redesignação não exigem justificativa só por serem edições.
+Edição comum, reagendamento e alteração de responsável não exigem justificativa só por serem edições.
 
 ---
 
@@ -1674,6 +1674,13 @@ Origem:
 
 Criada no Processo herda Processo. Criada de Publicação herda obrigatoriamente o Processo da Publicação.
 
+### Terminologia operacional
+
+- **Alterar responsável**: troca o usuário responsável pela Atividade e não altera data ou horário por consequência implícita.
+- **Reagendar**: altera data e/ou horário da Atividade; o responsável permanece o mesmo salvo se houver uma ação separada de Alterar responsável.
+- Para a modalidade **Audiência**, a ação temporal deve aparecer como **Reagendar audiência**.
+- Troca de responsável e mudança de data/horário são operações distintas na interface e no domínio; nunca usar o mesmo rótulo para as duas intenções.
+
 ## 19.2 API
 
 Família `/api/v1/atividades`.
@@ -1745,10 +1752,12 @@ Ações conforme capacidade/estado:
 
 - concluir/reabrir;
 - reagendar;
-- redesignar;
+- alterar responsável;
 - editar;
 - cancelar;
 - excluir.
+
+Para Audiência, a ação de mudança temporal usa o texto `Reagendar audiência`.
 
 A ação mais frequente pode ficar direta; demais no menu.
 
@@ -1760,6 +1769,7 @@ A ação mais frequente pode ficar direta; demais no menu.
 - criação em horário escolhido;
 - arraste para reagendar;
 - comando Reagendar como alternativa;
+- em Audiência, apresentar a alternativa como `Reagendar audiência`;
 - sem paginação de lista.
 
 ### 19.3.3 Semana
@@ -1796,7 +1806,9 @@ INFORMAÇÕES DA ATIVIDADE
   Histórico
 ```
 
-Editar, Reagendar e Redesignar usam Dialog.
+Editar, Reagendar e Alterar responsável usam Dialogs próprios/reutilizáveis conforme a intenção.
+
+Quando a Atividade for Audiência, a ação temporal é `Reagendar audiência`.
 
 ## 19.5 Área de trabalho `/dashboard`
 
@@ -2859,7 +2871,9 @@ Sem nova decisão explícita, não adicionar:
 - [ ] Audiência/Prazo/Tarefa/Evento.
 - [ ] atraso derivado.
 - [ ] página própria.
-- [ ] reagendar/redesignar.
+- [ ] reagendar/alterar responsável.
+- [ ] Audiência usa `Reagendar audiência` para mudança de data/horário.
+- [ ] Alterar responsável nunca muda data/horário implicitamente.
 
 ## Área de trabalho
 
@@ -2919,4 +2933,4 @@ Sem nova decisão explícita, não adicionar:
 
 # 37. Instrução final para o agente implementador
 
-> Construa o Orvya completo neste repositório seguindo este `ORVYA.md` como especificação única. Implemente por fatias verticais, sempre conectando banco, regra, API e interface antes de avançar. Use Adobe Spectrum 2 exclusivamente. No App, trate Processos e Atividades como coleções operacionais em `ListView`, com título, contexto e metadados em linhas de leitura, não como tabelas de várias colunas. Prefira o mesmo princípio nas demais entidades operacionais quando houver hierarquia natural e reserve `TableView` para Financeiro, Relatórios e Administração quando a comparação entre colunas for a tarefa real. Toda listagem paginada deve mostrar a paginação antes do primeiro item, na faixa superior com pesquisa e filtros, no formato `1 a 25 de N  [25 ▾] [‹] [›]`, sem repetir controles no rodapé. O cabeçalho não mostra o nome do escritório, mantém a pesquisa geometricamente centralizada e usa somente botões de ícone com nomes acessíveis. O `+` global reutiliza os mesmos Dialogs dos módulos e o sino abre a prévia de Notificações. Preserve isolamento multi-tenant, permissões server-side, contratos canônicos em português, revisão concorrente, histórico e precisão financeira. Faça verificações curtas nos grandes marcos e deixe a bateria completa para a estabilização final. Termine somente quando a instalação limpa estiver funcional, segura, responsiva e reproduzível.
+> Construa o Orvya completo neste repositório seguindo este `ORVYA.md` como especificação única. Implemente por fatias verticais, sempre conectando banco, regra, API e interface antes de avançar. Use Adobe Spectrum 2 exclusivamente. No App, trate Processos e Atividades como coleções operacionais em `ListView`, com título, contexto e metadados em linhas de leitura, não como tabelas de várias colunas. Prefira o mesmo princípio nas demais entidades operacionais quando houver hierarquia natural e reserve `TableView` para Financeiro, Relatórios e Administração quando a comparação entre colunas for a tarefa real. Toda listagem paginada deve mostrar a paginação antes do primeiro item, na faixa superior com pesquisa e filtros, no formato `1 a 25 de N  [25 ▾] [‹] [›]`, sem repetir controles no rodapé. O cabeçalho não mostra o nome do escritório, mantém a pesquisa geometricamente centralizada e usa somente botões de ícone com nomes acessíveis. O `+` global reutiliza os mesmos Dialogs dos módulos e o sino abre a prévia de Notificações. Em Atividades, use `Alterar responsável` exclusivamente para troca do usuário responsável e `Reagendar` para mudança de data/horário; em Audiências, a ação temporal deve aparecer como `Reagendar audiência`. Preserve isolamento multi-tenant, permissões server-side, contratos canônicos em português, revisão concorrente, histórico e precisão financeira. Faça verificações curtas nos grandes marcos e deixe a bateria completa para a estabilização final. Termine somente quando a instalação limpa estiver funcional, segura, responsiva e reproduzível.
