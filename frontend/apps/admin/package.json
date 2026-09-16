@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@orvya/shared": "workspace:*",
+    "@orvya/shared": "0.1.0",
     "@react-spectrum/s2": "1.7.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
