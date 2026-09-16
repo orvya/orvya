@@ -1,12 +1,12 @@
 # ORVYA — blueprint único de implementação
 
-> **Objetivo:** construir o Orvya do zero, de forma autônoma, direta e reproduzível, preservando o comportamento funcional atual e removendo a complexidade histórica que não é necessária para o produto final.
+> **Objetivo:** construir o Orvya do zero, de forma autônoma, direta e reproduzível, preservando o comportamento funcional vigente e evitando carregar a complexidade histórica do projeto anterior.
 >
 > **Repositório de implementação:** `orvya/orvya`, branch `main`.
 >
-> **Baseline funcional verificada:** comportamento de `orvya/orvya-base@f11abd463f27cbdc3515fc14de272bbd86767d62`, cuja instalação na homologação foi registrada em `b3c07fea8d306f3464a02262586ea9d38b7eb1f6`.
+> **Baseline funcional verificada:** comportamento de `orvya/orvya-base@f11abd463f27cbdc3515fc14de272bbd86767d62`, cuja instalação em homologação foi registrada posteriormente em `b3c07fea8d306f3464a02262586ea9d38b7eb1f6`.
 >
-> **Regra de prevalência:** este arquivo descreve o produto novo. Quando uma escolha aqui divergir de artefato histórico, **este arquivo prevalece**.
+> **Regra de prevalência:** este arquivo descreve o produto novo. Onde uma escolha deste documento divergir do projeto histórico, **este arquivo prevalece**.
 
 ---
 
@@ -14,18 +14,18 @@
 
 O Orvya é um SaaS jurídico multi-tenant para escritórios e profissionais da advocacia.
 
-O produto final possui somente duas superfícies:
+O produto possui somente duas superfícies:
 
 | Superfície | Host | Finalidade |
 |---|---|---|
 | App | `app.orvya.net` | produto utilizado pelos escritórios |
 | Admin | `admin.orvya.net` | administração global da Plataforma |
 
-A API fica sob `/api/v1` e é consumida pelas duas superfícies.
+A API fica sob `/api/v1` e atende as duas superfícies.
 
-O núcleo do produto conecta:
+O núcleo conecta:
 
-- escritórios e usuários;
+- Escritórios e usuários;
 - Pessoas;
 - Processos judiciais e administrativos;
 - Agenda e Atividades;
@@ -38,61 +38,76 @@ O núcleo do produto conecta:
 - Configurações do escritório;
 - Administração da Plataforma.
 
-## 1.1 Critério real de conclusão
+## 1.1 Decisões já consolidadas para esta reconstrução
 
-A implementação só termina quando:
+Estas decisões são definitivas para o novo Orvya:
 
-- um banco vazio recebe uma migration inicial e sobe sem intervenção manual;
+- não implementar website institucional ou landing page;
+- não implementar Google Auth;
+- não implementar Google Calendar;
+- não implementar rotina ou painel de backup;
+- usar **Adobe Spectrum 2 exclusivamente** como Design System;
+- o cabeçalho do App não mostra o nome do escritório;
+- a Pesquisa Global fica geometricamente centralizada no cabeçalho;
+- botões do cabeçalho são somente ícones;
+- Processos e Atividades usam **listas operacionais**, não tabelas administrativas;
+- a mesma linguagem de lista deve ser preferida nas demais áreas operacionais quando a informação tiver hierarquia natural em vez de comparação por colunas.
+
+## 1.2 Critério de conclusão
+
+A implementação termina somente quando:
+
+- um banco vazio recebe a migration inicial e sobe sem intervenção manual;
 - cadastro, confirmação de e-mail, login, sessão e recuperação de senha funcionam;
 - App e Admin compilam e funcionam;
 - isolamento entre escritórios está garantido no backend;
-- todas as fatias verticais deste documento estão implementadas;
+- todas as fatias verticais abaixo estão implementadas;
 - integrações ausentes aparecem como indisponíveis, sem simular sucesso;
-- o deploy HTTPS dos dois hosts funciona;
-- os smoke tests finais passam;
-- não há erro de migration, typecheck ou build.
+- deploy HTTPS dos dois hosts funciona;
+- smoke tests finais passam;
+- não existe erro de migration, typecheck ou build.
 
 ---
 
 # 2. Protocolo de execução para a IA
 
-A IA deve executar esta especificação como **uma tarefa contínua**, sem solicitar aprovação entre fases.
+A IA deve tratar esta especificação como **uma tarefa contínua**, sem solicitar aprovação entre fases.
 
 ## 2.1 Regras de trabalho
 
-1. Não reproduzir a arquitetura histórica por fidelidade ao passado.
-2. Reproduzir regras de produto, fluxos, dados, navegação e experiência vigentes.
-3. Usar um **monólito modular**, não microserviços por domínio.
-4. Criar **uma migration inicial limpa** com o schema final.
-5. Criar migrations adicionais apenas se o schema mudar durante a própria implementação.
-6. Não gerar EFs, ETs, matrizes, relatórios de evidência ou documentos paralelos.
-7. Não criar uma suíte massiva de testes enquanto o produto ainda está incompleto.
-8. Validar apenas marcos grandes durante a construção.
-9. Fazer a rodada completa de correções e testes no final.
-10. Não inventar preço, cobrança, checkout ou recurso comercial ausente desta especificação.
+1. Reproduzir produto, regras e experiência vigentes, não a arquitetura histórica.
+2. Usar **monólito modular**.
+3. Não criar microserviços por domínio.
+4. Criar **uma migration inicial limpa** com o schema final conhecido.
+5. Criar novas migrations somente se o schema mudar durante a própria implementação.
+6. Não gerar EFs, ETs, matrizes, relatórios de evidência ou documentação paralela.
+7. Não perseguir cobertura de testes enquanto o produto ainda está incompleto.
+8. Validar apenas grandes marcos durante a construção.
+9. Fazer a rodada ampla de correções e testes no final.
+10. Não inventar preço, cobrança, checkout ou funcionalidade comercial.
 11. Não armazenar segredo no Git.
-12. Não criar dado fictício persistente para fazer a interface parecer pronta.
-13. Se uma integração externa não estiver configurada, concluir o restante do produto e mostrar o estado real dessa integração.
-14. Se um defeito não bloquear o avanço estrutural, registrá-lo temporariamente e continuar até a estabilização final.
-15. Criar commits apenas em grandes marcos coerentes.
+12. Não criar dados fictícios persistentes para preencher interfaces.
+13. Integração externa não configurada não bloqueia a construção do restante do produto.
+14. Defeito não estrutural pode ser anotado temporariamente e resolvido na estabilização final.
+15. Commits devem acompanhar marcos grandes e coerentes.
 
 ## 2.2 Método obrigatório: fatias verticais
 
-Cada domínio deve ser implementado nesta ordem interna:
+Cada domínio deve ser construído nesta sequência:
 
 ```text
 schema/modelo
-→ regras de domínio
-→ serviço/persistência
+→ regra de domínio
+→ persistência/serviço
 → API
 → cliente frontend
-→ tela/listagem/ficha
+→ listagem/ficha/formulário
 → smoke curto
 ```
 
-Não implementar toda a camada de banco do produto, depois toda a API e só no fim todas as telas. Isso aumenta deriva entre camadas.
+Não implementar o banco inteiro primeiro, depois toda a API e somente depois o frontend.
 
-Cada fatia só precisa de um smoke curto para provar que está conectada. A bateria ampla fica para o final.
+A unidade de avanço é uma função real do produto funcionando ponta a ponta.
 
 ## 2.3 Grafo de dependência
 
@@ -102,7 +117,7 @@ F0 Fundação
  │   ├─ F2 Pessoas
  │   ├─ F3 Processos
  │   │   └─ F4 Atividades, Agenda e Área de trabalho
- │   │       └─ F5 Publicações e Pesquisa
+ │   │       └─ F5 Publicações, Pesquisa e Notificações
  │   └─ F6 Arquivos, Documentos e Modelos
  │
  ├─ F7 Financeiro
@@ -112,8 +127,6 @@ F0 Fundação
 
 F0..F9 → F10 Deploy → F11 Estabilização final
 ```
-
-Implementar na ordem acima, podendo adiantar apenas componentes compartilhados realmente necessários ao próximo bloco.
 
 ---
 
@@ -174,17 +187,17 @@ orvya/
    └─ Dockerfile.frontend
 ```
 
-A divisão de pastas pode variar se mantiver a mesma separação de responsabilidades.
+A divisão física pode variar sem alterar a separação de responsabilidades.
 
-## 3.1 Processos de runtime
+## 3.1 Runtime
 
 Use Docker Compose com:
 
 1. `postgres` — PostgreSQL;
 2. `api` — FastAPI;
-3. `worker` — tarefas persistentes e rotinas recorrentes;
-4. `ops` — executor mínimo e allowlisted para ações operacionais que não devem ser executadas pelo processo HTTP;
-5. `nginx` — arquivos do frontend e proxy para a API.
+3. `worker` — tarefas persistentes e recorrentes;
+4. `ops` — executor mínimo e allowlisted para operações administrativas;
+5. `nginx` — assets do frontend e proxy da API.
 
 Não adicionar Redis ou outro broker sem necessidade concreta. A fila interna pode usar PostgreSQL.
 
@@ -207,7 +220,7 @@ Não adicionar Redis ou outro broker sem necessidade concreta. A fila interna po
 - boto3 para armazenamento compatível com S3;
 - biblioteca DOCX pequena e mantida;
 - biblioteca XLSX pequena e mantida;
-- conversor de PDF somente onde necessário.
+- conversão PDF somente onde necessária.
 
 ## 4.2 Frontend
 
@@ -217,19 +230,19 @@ Não adicionar Redis ou outro broker sem necessidade concreta. A fila interna po
 - Vite;
 - npm workspaces;
 - **Adobe Spectrum 2 exclusivamente**;
-- pacote principal `@react-spectrum/s2`;
-- styling com `@react-spectrum/s2/style`;
-- ícones com `@react-spectrum/s2/icons/*`.
+- `@react-spectrum/s2`;
+- `@react-spectrum/s2/style`;
+- ícones `@react-spectrum/s2/icons/*`.
 
-Usar uma versão estável atual de Spectrum 2 e travá-la no lockfile. Não misturar versões anteriores do Spectrum nem outra biblioteca de componentes.
+Fixar uma versão estável no lockfile e não misturar Spectrum 2 com biblioteca visual concorrente.
 
-## 4.3 Provider Spectrum
+## 4.3 Provider
 
-App e Admin devem montar `Provider` do Spectrum 2 na raiz, configurando:
+App e Admin montam `Provider` Spectrum 2 na raiz com:
 
 - locale `pt-BR`;
-- integração com o roteador;
-- esquema de cor adotado pela aplicação;
+- integração com roteamento;
+- esquema de cor adotado;
 - comportamento responsivo oficial;
 - tipografia fornecida pelo próprio Spectrum.
 
@@ -242,7 +255,7 @@ Não carregar família tipográfica externa para a interface.
 Spectrum 2 é a única fonte de:
 
 - componentes;
-- tipografia de interface;
+- tipografia;
 - cores de interface;
 - espaçamentos;
 - raios;
@@ -251,15 +264,15 @@ Spectrum 2 é a única fonte de:
 - ícones;
 - estados;
 - menus;
+- listas;
 - tabelas;
 - formulários;
 - diálogos;
 - tooltips;
-- skeletons e progressos;
-- responsividade de controles;
-- comportamento de toque.
+- skeletons/progresso;
+- comportamento de toque e responsividade dos controles.
 
-Use componentes oficiais sempre que existirem, especialmente:
+Usar componentes oficiais sempre que existirem, especialmente:
 
 - `Provider`;
 - `Button`;
@@ -273,58 +286,176 @@ Use componentes oficiais sempre que existirem, especialmente:
 - `Picker`;
 - `Checkbox`;
 - `Switch`;
-- `DatePicker` e componentes temporais;
+- componentes de data/hora;
 - `Dialog`;
 - `AlertDialog`;
 - `Tabs`;
 - `SegmentedControl`;
+- `ListView`;
 - `TableView`;
 - `SideNav`;
 - `Avatar`;
-- `Badge` ou `StatusLight` conforme semântica;
+- `Badge` ou `StatusLight`;
 - `Toast`;
 - `Tooltip`;
 - `Skeleton`;
-- `ProgressCircle`;
-- `Breadcrumbs` quando realmente necessário.
+- `ProgressCircle`.
 
 ## 5.1 Styling adicional
 
-Quando layout adicional for necessário:
+Quando necessário:
 
 ```ts
 import {style, focusRing} from '@react-spectrum/s2/style' with {type: 'macro'};
 ```
 
-Usar tokens Spectrum antes de qualquer valor arbitrário.
+Usar tokens Spectrum antes de valor arbitrário.
 
 Não criar:
 
 - Design System intermediário próprio;
 - paleta paralela;
 - reset global agressivo;
-- cópias visuais de componentes Spectrum;
-- CSS que sobrescreva internamente componentes para fazê-los parecer outra biblioteca.
+- cópias de componentes Spectrum;
+- CSS que reestilize internamente o Spectrum para parecer outra biblioteca.
 
 ## 5.2 Marca
 
 - nome sempre `Orvya`;
-- usar logotipo oficial completa em SVG onde houver espaço;
-- usar emblema oficial em contexto compacto;
+- logotipo oficial completa em SVG onde houver espaço;
+- emblema oficial em contexto compacto;
 - não reconstruir a marca com texto comum;
-- cores próprias da marca não redefinem a paleta de UI do Spectrum.
+- cores da marca não redefinem a paleta de UI.
 
-## 5.3 Cores de tipos de Atividade
+## 5.3 Cor de Atividade
 
-O banco armazena uma **chave de cor do produto**, nunca hexadecimal.
+O banco armazena **chave de cor do produto**, nunca hexadecimal.
 
-Use conjunto fechado de opções visuais mapeadas para tokens Spectrum. A mesma chave deve gerar o mesmo marcador na Área de trabalho, Agenda, Processo, Pesquisa, Notificações e Relatórios.
+Use conjunto fechado mapeado para tokens Spectrum.
+
+A mesma chave gera o mesmo marcador na Área de trabalho, Agenda, Processo, Pesquisa, Notificações e Relatórios.
 
 Cor nunca é o único indicador de significado.
 
 ---
 
-# 6. Configuração
+# 6. Padrão de listas operacionais
+
+Esta seção é normativa para o App.
+
+A organização visual foi revista tomando como referência o modelo mental observado na documentação do Astrea para Processos/Casos e tarefas/Agenda: informação principal em destaque, contexto logo abaixo, filtros no topo, linha clicável e ações discretas. **Não copiar recursos do Astrea que não existam no Orvya.**
+
+Não introduzir por essa referência:
+
+- etiquetas;
+- prioridade;
+- estrela de importante;
+- listas pessoais de tarefas;
+- Kanban;
+- privacidade por Processo;
+- ações em lote inexistentes;
+- qualquer outra regra funcional não definida neste documento.
+
+A referência é de **composição e densidade**, não de feature parity.
+
+## 6.1 Lista operacional x tabela
+
+Use **`ListView` / lista de leitura** quando cada item for um objeto que a pessoa reconhece por título + contexto.
+
+Use **`TableView`** quando o objetivo principal for comparar valores entre colunas.
+
+### Lista operacional obrigatória
+
+- Processos;
+- Agenda na visão Lista;
+- Minhas atividades da Área de trabalho.
+
+### Lista operacional preferida
+
+Também preferir lista para:
+
+- Pessoas;
+- Publicações;
+- Documentos;
+- Notificações;
+- resultados de Pesquisa;
+- relações curtas dentro de fichas.
+
+Tabela continua adequada para:
+
+- Financeiro quando houver comparação numérica;
+- Relatórios;
+- extratos;
+- grades administrativas do Admin;
+- catálogos técnicos;
+- auditoria e migrations.
+
+## 6.2 Anatomia de um item operacional
+
+Um item deve possuir no máximo três níveis de leitura:
+
+```text
+[Título / identificação principal]                         [estado/ação]
+[Contexto principal]
+[metadado · metadado · metadado]
+```
+
+Regras:
+
+- sem cabeçalho de colunas;
+- sem linhas verticais de grade;
+- sem transformar cada metadado em coluna fixa;
+- altura natural;
+- separador discreto entre itens ou tratamento visual nativo do `ListView`;
+- item inteiro navegável;
+- ação interativa interna não dispara a navegação;
+- foco e seleção seguem Spectrum;
+- estado de hover é discreto;
+- nenhuma sombra pesada por item;
+- não criar um Card visual independente para cada linha de uma lista longa.
+
+`Card` fica para objetos isolados, resumo ou composição em que o próprio Spectrum recomende.
+
+## 6.3 Ações e seleção
+
+Ações recorrentes e inequívocas podem aparecer como ícone.
+
+Ações secundárias ficam em `ActionMenu`.
+
+Seleção múltipla só aparece se a tela possuir uma ação coletiva real.
+
+Não adicionar checkbox apenas por semelhança com outro produto.
+
+Quando seleção múltipla existir, usar suporte de seleção do `ListView`/Spectrum e uma barra de ações apropriada.
+
+## 6.4 Responsividade
+
+Em largura estreita:
+
+```text
+Título                         ação
+Contexto
+metadado
+metadado
+```
+
+Os metadados podem quebrar linha. Não virar tabela rolável para preservar colunas inexistentes.
+
+## 6.5 Ferramentas da lista
+
+Acima da lista:
+
+```text
+[Pesquisa........................] [filtro principal] [Mais filtros] [paginação]
+```
+
+Filtros principais podem ficar visíveis. Filtros secundários ficam em `Mais filtros`.
+
+Filtros ativos devem ser perceptíveis e removíveis sem abrir novamente o formulário quando o Spectrum oferecer padrão apropriado.
+
+---
+
+# 7. Configuração
 
 `.env.example` contém apenas nomes de variáveis.
 
@@ -349,20 +480,18 @@ CNJ_TOKEN=
 OPS_TOKEN=
 ```
 
-A aplicação deve iniciar sem integrações externas configuradas, exceto quando a própria operação solicitada depender delas.
+A aplicação deve iniciar sem integrações externas configuradas, exceto quando a operação solicitada depender delas.
 
 ---
 
-# 7. Segurança, sessão e autoridade
+# 8. Segurança, sessão e autoridade
 
-## 7.1 Sessão
+## 8.1 Sessão
 
-Use sessão opaca controlada pelo servidor.
-
-Regras vigentes:
+Sessão opaca controlada pelo servidor:
 
 - segredo aleatório criptográfico com pelo menos 256 bits;
-- somente derivação do segredo é persistida;
+- somente derivação é persistida;
 - cookie `HttpOnly`;
 - `Secure` em produção;
 - host-only;
@@ -371,25 +500,25 @@ Regras vigentes:
 - 30 minutos de inatividade;
 - 8 horas de duração absoluta.
 
-Escopos distintos:
+Escopos:
 
 - App;
 - Admin;
-- acesso assistido no App, pertencente ao Administrador da Plataforma real.
+- acesso assistido no App pertencente ao Administrador da Plataforma real.
 
-## 7.2 CSRF
+## 8.2 CSRF
 
-Mutações autenticadas exigem token da sessão no cabeçalho:
+Mutações autenticadas exigem:
 
 ```text
 X-Orvya-CSRF
 ```
 
-O token fica apenas no estado em memória da aplicação.
+Token somente na memória da aplicação.
 
-Não usar `localStorage`, `sessionStorage` ou IndexedDB para sessão ou credenciais.
+Não usar `localStorage`, `sessionStorage` ou IndexedDB para sessão/credenciais.
 
-## 7.3 Operação/correlação
+## 8.3 Correlação
 
 Toda resposta da API possui:
 
@@ -397,64 +526,58 @@ Toda resposta da API possui:
 X-Orvya-Operation-Id
 ```
 
-Esse identificador serve para correlação segura de logs e erros.
-
-## 7.4 Senhas
+## 8.4 Senhas
 
 - Argon2id;
 - nunca logar senha ou token;
 - recuperação por token de uso único;
-- resposta de pedido de recuperação não revela se o e-mail existe.
+- pedido de recuperação não revela se e-mail existe.
 
-## 7.5 Autoridade central
+## 8.5 Autoridade central
 
-Existe uma única função/serviço de decisão de autorização.
-
-Toda requisição protegida reavalia:
+Uma única camada de autorização decide, a cada requisição:
 
 - identidade;
 - tenant;
 - estado da conta;
 - estado do usuário;
-- condição de Administrador do Sistema;
+- Administrador do Sistema;
 - permissões granulares;
 - recurso do Plano;
 - limite aplicável;
-- alcance do objeto quando necessário.
+- alcance do objeto.
 
-O frontend apenas esconde ou desabilita controles conforme o contexto recebido. A segurança real é do servidor.
+Frontend apenas projeta capacidades. Segurança real é do servidor.
 
-## 7.6 Multi-tenant
+## 8.6 Multi-tenant
 
 - tenant vem da sessão;
-- rotas operacionais do App não aceitam `account_id` como fonte de autoridade;
-- toda consulta aplica tenant no servidor;
-- relação entre dados de tenants diferentes é recusada;
-- ID pertencente a outra conta responde como não localizado ou sem autoridade sem revelar existência;
+- App não aceita `account_id` do cliente como autoridade;
+- toda consulta aplica tenant;
+- relação entre tenants é recusada;
+- ID de outro escritório não vaza existência;
 - Pesquisa, Relatórios, arquivos e histórico obedecem à mesma fronteira.
 
-## 7.7 Acesso assistido
+## 8.7 Acesso assistido
 
 `Acessar escritório` no Admin cria contexto temporário próprio no host do App.
 
-Regras:
-
 - não cria usuário local;
 - não consome vaga;
-- autoria continua sendo do Administrador da Plataforma;
+- autoria é do Administrador da Plataforma;
 - interface mostra faixa clara de acesso assistido;
-- existe ação visível para retornar ao Admin;
-- ações entram no histórico com o ator real.
+- há ação para retornar ao Admin;
+- ações entram no histórico com ator real.
 
 ---
 
-# 8. Contrato HTTP canônico
+# 9. Contrato HTTP canônico
 
-Use REST JSON sob `/api/v1`.
+REST JSON sob `/api/v1`.
 
-Os nomes funcionais das famílias de rotas permanecem em português quando já são canônicos no Orvya.
+Nomes funcionais das famílias de rotas permanecem em português quando já são canônicos no Orvya.
 
-## 8.1 Coleções
+## 9.1 Coleções
 
 Parâmetros comuns:
 
@@ -470,11 +593,11 @@ page_size
 Regras:
 
 - `page` começa em 1;
-- `page_size` aceita somente 25, 50 ou 100;
+- `page_size`: 25, 50 ou 100;
 - padrão 25;
-- `q` tem no máximo 200 caracteres;
-- ordenação é estável e desempata por ID;
-- filtro inválido é erro de campo, não fallback silencioso.
+- `q` até 200 caracteres;
+- ordenação estável com desempate por ID;
+- valor inválido é erro de campo.
 
 Envelope:
 
@@ -488,15 +611,13 @@ Envelope:
 }
 ```
 
-## 8.2 Erros
-
-Envelope obrigatório:
+## 9.2 Erros
 
 ```json
 {
   "erro": {
     "code": "codigo_estavel",
-    "mensagem": "Mensagem compreensível em pt-BR.",
+    "mensagem": "Mensagem compreensível.",
     "field": "campo_opcional",
     "operation_id": "identificador",
     "retryable": false
@@ -509,53 +630,39 @@ Nunca serializar traceback, segredo, token ou conteúdo de outro tenant.
 Status principais:
 
 - `400` entrada inválida;
-- `401` sem sessão válida;
+- `401` sem sessão;
 - `403` sem autoridade;
 - `404` ausente ou fora do alcance;
-- `409` conflito de revisão/concorrência;
+- `409` conflito de revisão;
 - `422` regra de domínio;
-- `429` limite técnico quando aplicável;
+- `429` limite técnico;
 - `503` dependência necessária indisponível.
 
-## 8.3 Revisão otimista
+## 9.3 Revisão otimista
 
 Registros editáveis importantes possuem `revision`.
 
-Mutação recebe:
+Mutação envia `expected_revision`.
+
+Conflito retorna `409`; frontend oferece recarregar/revisar e nunca sobrescreve silenciosamente.
+
+## 9.4 Idempotência
+
+Comandos capazes de duplicar efeito por repetição de rede usam chave de operação reaproveitada na mesma tentativa deliberada.
+
+Aplicar especialmente ao Financeiro e efeitos externos.
+
+## 9.5 Dinheiro
+
+Dinheiro viaja como string decimal.
 
 ```json
-{"expected_revision": 3}
+{"principal":"1250.00","open":"500.00"}
 ```
 
-Se a revisão mudou:
+Nunca `float`.
 
-- responder `409`;
-- indicar campo `expected_revision` quando aplicável;
-- frontend oferece recarregar e revisar;
-- nunca sobrescrever silenciosamente.
-
-## 8.4 Idempotência
-
-Comandos que possam duplicar efeito por repetição de rede recebem uma chave de operação gerada pelo cliente e reutilizada ao repetir a mesma tentativa deliberada.
-
-Aplicar especialmente a operações financeiras e efeitos externos.
-
-## 8.5 Dinheiro
-
-Dinheiro trafega como string decimal.
-
-```json
-{
-  "principal": "1250.00",
-  "open": "500.00"
-}
-```
-
-Nunca trafegar dinheiro como `float`.
-
-## 8.6 Famílias de rotas
-
-Manter estas famílias, detalhando subrotas apenas conforme cada fatia exigir:
+## 9.6 Famílias de rotas
 
 ```text
 /api/v1/auth/*
@@ -582,21 +689,18 @@ Manter estas famílias, detalhando subrotas apenas conforme cada fatia exigir:
 /api/v1/saude/dependencias
 ```
 
-Não criar endpoint novo para cada pequena composição de tela. Preferir filtros e projeções coerentes.
+Não criar endpoint para cada pequena composição visual.
 
 ---
 
-# 9. Modelo de dados mínimo
+# 10. Modelo de dados mínimo
 
-Use UUID como identificador primário, timestamps timezone-aware para instantes e `DATE` para datas civis.
+UUID como identificador, timestamps timezone-aware para instantes e `DATE` para datas civis.
 
-Nomes físicos podem variar. As relações abaixo não podem desaparecer.
-
-## 9.1 Globais
+## 10.1 Globais
 
 - Planos;
-- recursos de Plano;
-- limites de Plano;
+- recursos e limites de Plano;
 - Administradores da Plataforma;
 - catálogos iniciais;
 - catálogos referenciais;
@@ -605,131 +709,111 @@ Nomes físicos podem variar. As relações abaixo não podem desaparecer.
 - histórico da Plataforma;
 - execuções operacionais.
 
-## 9.2 Por escritório
+## 10.2 Por escritório
 
-- contas/escritórios;
+- contas;
 - usuários;
 - permissões;
 - convites;
 - sessões;
 - tokens de confirmação/recuperação;
-- Pessoas;
-- contatos;
-- endereços;
-- identificações;
-- vínculos entre Pessoas;
-- Processos;
-- partes;
-- responsáveis;
-- monitoramento processual;
+- Pessoas, contatos, endereços, identificações e vínculos;
+- Processos, partes, responsáveis e monitoramento;
 - buscas processuais;
-- Atividades;
-- catálogos de Atividade;
+- Atividades e catálogos de Atividade;
 - Publicações;
 - arquivos;
-- Documentos;
-- vínculos documentais;
-- Modelos DOCX;
-- contas financeiras;
-- categorias;
-- centros de custo;
-- formas de pagamento;
-- Lançamentos;
-- baixas;
-- transferências;
-- conciliações;
-- Notificações;
-- preferências de Notificações;
+- Documentos, vínculos documentais e Modelos;
+- contas financeiras, categorias, centros, formas;
+- Lançamentos, baixas, transferências, conciliações;
+- Notificações e preferências;
 - catálogos da conta;
 - fatos de histórico;
 - definições salvas de Relatórios quando utilizadas.
 
-## 9.3 Regras transversais
+## 10.3 Regras transversais
 
-- dado tenant-scoped possui `account_id` direto ou por relação estrutural inequívoca;
+- dado tenant-scoped possui `account_id` direto ou relação inequívoca;
 - dinheiro usa `NUMERIC`;
-- histórico é append-only;
-- datas civis não viram meia-noite artificial em UTC;
-- texto `Não informado` nunca é persistido como dado;
+- histórico append-only;
+- data civil não vira meia-noite artificial UTC;
+- `Não informado` não é persistido;
 - relação não duplica entidade;
-- exclusão de relação não exclui automaticamente o registro relacionado.
+- excluir relação não exclui automaticamente registro relacionado.
 
 ---
 
-# 10. Planos e Teste Grátis
+# 11. Planos e Teste Grátis
 
 Toda conta possui Plano.
 
-## 10.1 Limites principais
+## 11.1 Limites
 
 - usuários;
 - Processos monitorados;
 - armazenamento.
 
-Cada limite tem modo explícito:
+Modos:
 
 - limitado;
 - ilimitado;
-- pendente, quando uma decisão ainda não existe.
+- pendente.
 
-Zero é um limite válido e não significa ilimitado.
+Zero é limite válido.
 
-## 10.2 Recursos controláveis
+## 11.2 Recursos
 
 No mínimo:
 
 - núcleo;
 - Publicações;
 - Documentos;
-- Modelos de documentos;
+- Modelos;
 - Financeiro;
 - Relatórios.
 
-## 10.3 Teste Grátis
+## 11.3 Teste Grátis
 
 - Plano estrutural permanente;
-- duração de 7 dias exatos desde a criação da conta;
+- 7 dias exatos desde a criação;
 - padrão do autocadastro;
-- ao expirar, suspender a conta se ela ainda estiver nesse Plano;
-- mudar para outro Plano encerra o efeito da expiração;
-- retornar depois ao Teste Grátis não reinicia os sete dias.
+- ao expirar, suspender se conta continuar nele;
+- mudança para outro Plano encerra efeito da expiração;
+- retorno posterior não reinicia sete dias.
 
-Redução de Plano não apaga dados. Bloqueia apenas novas utilizações incompatíveis e explica a razão.
+Redução de Plano não apaga dados.
 
 ---
 
-# 11. Gramática comum de UX
+# 12. Gramática comum de UX
 
-## 11.1 Ver é página; agir é Dialog
+## 12.1 Ver é página; agir é Dialog
 
 | Intenção | Superfície |
 |---|---|
 | visualizar registro principal | página/ficha |
-| criar | Dialog |
-| editar | Dialog |
-| vincular | Dialog |
+| criar/editar/vincular | Dialog |
 | reagendar/redesignar | Dialog |
-| ação secundária | Menu/ActionMenu |
+| ação secundária | ActionMenu/Menu |
 | ação crítica | confirmação auditável |
-| trabalhar em lote | tabela/listagem |
-| consultar histórico | seção, aba ou timeline |
+| objeto operacional em coleção | ListView/lista de leitura |
+| comparação tabular | TableView |
+| histórico | seção/aba/timeline |
 
 Não usar drawer lateral para ficha ou formulário.
 
-## 11.2 Página
+## 12.2 Página
 
 - largura útil máxima aproximada de 1440 px;
 - centralizada;
 - gutters responsivos;
 - `min-width: 0` nas regiões flexíveis;
 - formulários controlam a própria largura;
-- 320 px não pode produzir overflow da página inteira.
+- 320 px não produz overflow da página inteira.
 
-## 11.3 Blocos de dados
+## 12.3 Blocos de dados
 
-Não criar um Card por campo.
-
-Padrão:
+Não criar Card por campo.
 
 ```text
 Bloco
@@ -741,77 +825,56 @@ Bloco
     ...
 ```
 
-Card fica reservado para resumo independente, indicador ou composição em que o próprio Spectrum recomende esse padrão.
+## 12.4 Consultas e filtros
 
-## 11.4 Listagens
+- pesquisa interna automática após 300 ms;
+- Enter antecipa;
+- resposta antiga não substitui nova;
+- mudar filtro/termo volta à página 1;
+- `Limpar filtros` restaura padrão e mantém tamanho;
+- `0 a 0 de 0` somente com zero confirmado;
+- durante atualização manter conteúdo anterior inerte quando seguro.
 
-- pesquisa automática após 300 ms;
-- Enter antecipa a consulta;
-- respostas antigas não substituem respostas novas;
-- mudar termo ou filtro volta à página 1;
-- `Limpar filtros` restaura os padrões da tela e preserva o tamanho de página;
-- paginação na mesma faixa da pesquisa/filtros;
-- ordem visual: faixa → tamanho → anterior/próxima;
-- `0 a 0 de 0` somente após zero confirmado pelo servidor;
-- durante atualização manter conteúdo anterior inerte quando for seguro;
-- linha inteira abre a ficha quando representa registro principal;
-- controle interativo dentro da linha não navega a linha;
-- nome do registro continua acessível por teclado;
-- tabela rola horizontalmente dentro do container antes de quebrar a página.
+## 12.5 Seleção assistida
 
-## 11.5 Seleção assistida
+Relações extensas usam `ComboBox` remoto:
 
-Relações grandes usam `ComboBox` com consulta remota:
-
-- mínimo 2 caracteres;
-- espera de 300 ms;
+- 2 caracteres;
+- 300 ms;
 - até aproximadamente 10 sugestões;
-- identificação principal + contexto curto;
-- sem carregar milhares de opções no navegador.
+- identificação + contexto;
+- nunca carregar milhares de itens no browser.
 
-Conjuntos pequenos e fechados usam `Picker`.
+## 12.6 Ações críticas
 
-## 11.6 Ações críticas
-
-Confirmação mostra:
+Dialog de confirmação:
 
 ```text
 Título
 Registro afetado
-Consequência objetiva
+Consequência
 Justificativa
 [Cancelar] [Confirmar]
 ```
 
-Justificativa obrigatória quando definida pela ação, entre 5 e 500 caracteres.
-
-Servidor registra ator, instante, ação, alvo e justificativa.
-
-## 11.7 Ações críticas atualmente justificadas
+Justificativa de 5 a 500 caracteres quando exigida.
 
 Aplicar ao menos a:
 
-- concluir Atividade;
-- cancelar Atividade;
-- reabrir Atividade;
+- concluir/cancelar/reabrir Atividade;
 - excluir registros principais;
-- substituir arquivo vigente;
 - alterar permissões;
-- suspender/reativar usuários ou contas;
+- suspender/reativar usuário ou conta;
 - ações administrativas destrutivas;
-- desconexões ou desativações externas que produzam efeito relevante.
+- desconexões externas relevantes.
 
-Edição comum, reagendamento e redesignação não exigem justificativa apenas por serem edições.
+Edição comum, reagendamento e redesignação não exigem justificativa só por serem edições.
 
 ---
 
-# 12. Cabeçalho do App
+# 13. Cabeçalho do App
 
-Esta seção substitui qualquer disposição anterior do cabeçalho.
-
-## 12.1 Regra visual
-
-**O nome do escritório não aparece no cabeçalho.**
+O nome do escritório **não aparece no cabeçalho**.
 
 Desktop:
 
@@ -821,64 +884,52 @@ Desktop:
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Estrutura de layout:
+Estrutura:
 
 ```text
-coluna esquerda  = 1fr
-coluna central   = largura controlada da pesquisa
-coluna direita   = 1fr
+esquerda = 1fr
+centro   = largura controlada da pesquisa
+direita  = 1fr
 ```
 
-A Pesquisa Global fica **geometricamente centralizada no cabeçalho**, independentemente da largura da marca ou da quantidade de ações à direita.
+Pesquisa Global fica geometricamente centralizada independentemente dos lados.
 
-A zona direita usa `justify-content: end`.
+## 13.1 Botões do cabeçalho
 
-## 12.2 Botões do cabeçalho
+Todos os botões são somente ícones:
 
-**Todos os botões do cabeçalho são somente ícones.**
-
-No App, isso inclui:
-
-- Menu, quando necessário em largura estreita;
+- Menu no mobile;
 - `+` global;
 - Notificações;
-- conta/perfil, preferencialmente Avatar como acionador;
-- qualquer outra ação futura do cabeçalho.
+- conta/perfil via Avatar ou ícone.
 
-Não renderizar texto como `Adicionar`, `Notificações`, `Conta`, `Menu` ou `Sessão` ao lado desses ícones.
+Não mostrar texto `Adicionar`, `Notificações`, `Conta`, `Menu` ou `Sessão` ao lado.
 
-Implementar com `ActionButton` ou componente Spectrum equivalente contendo apenas ícone/Avatar.
+Cada ação precisa de:
 
-Todo botão somente de ícone precisa de:
+- `aria-label`;
+- `Tooltip` quando útil;
+- foco Spectrum;
+- alvo de toque adequado;
+- estado aberto/selecionado perceptível.
 
-- `aria-label` explícito;
-- `Tooltip` em ponteiro/teclado quando útil;
-- estado de foco oficial do Spectrum;
-- área de toque adequada;
-- estado aberto/selecionado perceptível quando aplicável.
+## 13.2 Pesquisa Global
 
-Tooltip não substitui nome acessível.
+`SearchField` Spectrum:
 
-## 12.3 Pesquisa
-
-Usar `SearchField` Spectrum.
-
-- mínima de 2 caracteres;
+- mínimo 2 caracteres;
 - 300 ms;
-- resultados agrupados;
-- até 5 resultados por grupo na visualização rápida;
+- até 5 resultados por grupo na visão rápida;
 - setas navegam;
 - Enter abre;
-- Esc fecha resultado sem perder a capacidade de continuar digitando;
+- Esc fecha resultados;
 - `Ver todos os resultados` abre `/pesquisa`.
 
-Em telas estreitas, manter a pesquisa dentro do cabeçalho em uma segunda linha de largura disponível, centralizada. Não substituí-la permanentemente por página separada.
+Em tela estreita pode ocupar uma segunda linha do cabeçalho, mantendo-se na própria casca.
 
-## 12.4 Conta
+## 13.3 Conta
 
-O acionador de conta mostra apenas Avatar ou ícone de pessoa.
-
-Menu:
+Menu do Avatar:
 
 ```text
 Meu perfil
@@ -886,15 +937,13 @@ Configurações do escritório
 Sair
 ```
 
-O nome do escritório continua disponível onde ele é conteúdo real, como Configurações do escritório e faixa de acesso assistido, mas não no cabeçalho padrão.
+O nome do escritório permanece disponível apenas onde for conteúdo real, como Configurações ou acesso assistido.
 
 ---
 
-# 13. Navegação do App
+# 14. Navegação do App
 
 Use `SideNav` Spectrum.
-
-Entradas principais:
 
 ```text
 Área de trabalho
@@ -907,7 +956,7 @@ Financeiro
 Relatórios
 ```
 
-Subnavegação conceitual:
+Subnavegação:
 
 ```text
 Processos
@@ -929,18 +978,16 @@ Relatórios
   Modelos e relatórios salvos
 ```
 
-A navegação é filtrada pelas áreas/capacidades recebidas do servidor.
+Navegação filtrada pelas capacidades do servidor.
 
-Em largura estreita:
+Mobile:
 
-- SideNav fica em painel sobreposto;
-- acionador Menu é somente ícone;
-- Esc fecha;
-- cortina fecha;
-- foco retorna ao acionador;
-- conteúdo usa largura inteira quando fechada.
+- SideNav sobreposto;
+- botão Menu somente ícone;
+- Esc/cortina fecham;
+- foco retorna ao acionador.
 
-## 13.1 Rotas do App
+## 14.1 Rotas canônicas
 
 ```text
 /dashboard
@@ -975,40 +1022,28 @@ Em largura estreita:
 /conta/configuracoes/acoes-criticas
 ```
 
-Ao abrir uma ficha, preservar no histórico do navegador:
-
-- termo;
-- filtros;
-- página;
-- tamanho;
-- ordenação;
-- aba;
-- visão da Agenda;
-- data de referência;
-- posição aproximada de rolagem quando útil.
-
-Voltar deve retornar ao contexto anterior, sem refazer mentalmente a consulta.
+Ao abrir ficha preservar termo, filtros, página, tamanho, ordenação, visão, data e posição aproximada de rolagem.
 
 ---
 
-# 14. F0 — Fundação
+# 15. F0 — Fundação
 
-## Implementar
+Implementar:
 
-- estrutura do monorepo;
+- monorepo;
 - Docker Compose;
 - PostgreSQL;
 - configuração;
-- migration inicial vazia/preparada;
-- camada comum de erro;
+- migration inicial;
+- erros comuns;
 - paginação;
-- operação/correlação;
+- correlação;
 - Spectrum Provider;
 - cliente HTTP;
-- roteamento de App e Admin;
+- roteamento App/Admin;
 - health checks.
 
-## API mínima
+API mínima:
 
 ```text
 GET /api/v1/saude
@@ -1018,24 +1053,23 @@ GET /api/v1/saude/dependencias
 
 `/saude` mede somente vivacidade.
 
-`/saude/pronto` depende do banco e da revisão de schema exigida.
+`/saude/pronto` depende do banco e revisão esperada do schema.
 
-Integração opcional indisponível não derruba prontidão geral.
+Integração opcional indisponível não derruba readiness geral.
 
-## Pronto quando
+### Pronto quando
 
-- `alembic upgrade head` funciona em banco vazio;
+- migration sobe em banco vazio;
 - API inicia;
-- App vazio inicia;
-- Admin vazio inicia;
-- Spectrum renderiza nas duas superfícies;
+- App e Admin vazios iniciam;
+- Spectrum renderiza;
 - typecheck passa.
 
 ---
 
-# 15. F1 — Conta, acesso, Plano e permissões
+# 16. F1 — Conta, acesso, Plano e permissões
 
-## 15.1 Conta
+## 16.1 Conta
 
 Estados:
 
@@ -1048,51 +1082,47 @@ Campos principais:
 - CPF/CNPJ opcional;
 - telefone;
 - e-mail institucional;
-- fuso horário;
+- fuso;
 - logotipo;
 - Plano;
-- instante de criação;
-- expiração do Teste Grátis quando aplicável.
+- criação;
+- expiração do Teste Grátis.
 
-## 15.2 Usuário
+## 16.2 Usuário
 
 Estados:
 
 - Ativo;
 - Suspenso.
 
-Exclusão é ação, não terceiro estado permanente.
+Exclusão é ação, não terceiro estado.
 
 Campos:
 
 - nome;
 - e-mail;
-- senha derivada;
-- condição de Administrador do Sistema;
-- permissões granulares;
+- hash de senha;
+- Administrador do Sistema;
+- permissões;
 - foto opcional;
-- preferências pessoais;
+- preferências;
 - revisão.
 
-O e-mail de usuário operacional é único enquanto o cadastro existir.
+E-mail de usuário operacional é único enquanto cadastro existir.
 
-## 15.3 Administrador do Sistema
+## 16.3 Administrador do Sistema
 
-Administrador do Sistema possui acesso integral ao escritório dentro do Plano.
+Acesso integral ao escritório dentro do Plano.
 
-Permissões individuais continuam armazenadas e voltam a valer se a condição administrativa for removida.
+Permissões individuais continuam guardadas e voltam a valer se a condição for removida.
 
-Não criar cargos fixos como Advogado, Coordenador ou Colaborador como fonte automática de autoridade.
+Não criar cargos fixos como fonte de autoridade.
 
-## 15.4 Cadastro
+## 16.4 Cadastro
 
-Rota visível:
+Rota visível `/cadastro`.
 
-```text
-/cadastro
-```
-
-Campos iniciais:
+Campos:
 
 - nome;
 - e-mail;
@@ -1102,15 +1132,13 @@ Campos iniciais:
 Fluxo:
 
 1. criar conta;
-2. criar primeiro usuário;
-3. marcar como Administrador do Sistema;
+2. criar usuário inicial;
+3. marcar Administrador do Sistema;
 4. associar Teste Grátis;
 5. enviar confirmação de e-mail;
-6. somente após confirmação permitir acesso operacional.
+6. confirmar antes do acesso operacional.
 
-Não pedir configuração avançada no onboarding.
-
-## 15.5 Login
+## 16.5 Login
 
 ```text
 [Logo]
@@ -1122,67 +1150,52 @@ Esqueci minha senha
 Criar escritório
 ```
 
-Método de entrada: **e-mail e senha**.
+Somente e-mail + senha.
 
-## 15.6 Convite
+## 16.6 Convites
 
-Administrador do Sistema cria usuário com:
+Administrador cria usuário com nome, e-mail, permissões e condição administrativa opcional.
 
-- nome;
-- e-mail;
-- permissões;
-- condição administrativa opcional.
+Destinatário define senha. Convite pendente pode ser reenviado.
 
-Destinatário recebe convite e define senha.
-
-Convite pendente pode ser reenviado.
-
-## 15.7 Exclusão de usuário
+## 16.7 Exclusão de usuário
 
 Se houver responsabilidades:
 
 - escolher usuário ativo da mesma conta;
 - reatribuir Atividades Pendentes, inclusive atrasadas;
 - reatribuir Processos em que seja responsável principal;
-- fatos históricos permanecem com o autor original.
+- fatos históricos preservam autor original.
 
-## 15.8 Meu perfil `/conta/perfil`
-
-Três seções:
+## 16.8 Meu perfil `/conta/perfil`
 
 ```text
 Identificação | Notificações | Segurança
 ```
 
-### Identificação
+Identificação:
 
 - nome;
 - e-mail;
-- foto de perfil;
-- demais dados pessoais existentes.
+- foto;
+- dados pessoais existentes.
 
 Foto:
 
 - PNG/JPEG/WebP;
-- limite de 2 MB;
-- usa o armazenamento central;
-- outra pessoa da mesma conta pode ler a foto vigente quando autorizado;
-- Administrador do Sistema pode remover a foto de usuário da própria conta;
-- sem armazenamento configurado, mostrar indisponibilidade real.
+- até 2 MB;
+- armazenamento central;
+- sem storage configurado, mostrar indisponibilidade real.
 
-### Notificações
+Notificações: preferências individuais.
 
-Preferências individuais da central de Notificações.
-
-### Segurança
+Segurança:
 
 - alterar senha;
-- encerrar sessão atual;
-- informações de segurança realmente existentes.
+- encerrar sessão;
+- informações de segurança existentes.
 
-## 15.9 Configurações do escritório
-
-Sete seções:
+## 16.9 Configurações do escritório
 
 ```text
 Escritório
@@ -1196,40 +1209,21 @@ Ações críticas
 
 ### Escritório
 
-Read-first:
-
-```text
-Nome do escritório | CPF/CNPJ
-Telefone           | E-mail
-Fuso horário
-Logo
-```
-
-Editar abre Dialog.
+Read-first; Editar abre Dialog.
 
 ### Equipe e acesso
 
-Tabela:
+Aqui **TableView é apropriada**, pois há comparação administrativa de usuários.
+
+Campos principais:
 
 ```text
-| Usuário | Status | Administrador do Sistema | Convite/acesso |
+Usuário | Status | Administrador do Sistema | Convite/acesso
 ```
-
-Ações:
-
-- Novo usuário;
-- editar identificação;
-- editar permissões;
-- suspender/reativar;
-- excluir;
-- reenviar convite.
 
 ### Agenda
 
-Somente configuração compartilhada real:
-
-- fuso horário;
-- atalho para os catálogos de Atividade.
+Somente fuso compartilhado e acesso ao catálogo de Atividades.
 
 ### Plano e utilização
 
@@ -1241,30 +1235,28 @@ Somente configuração compartilhada real:
 
 ### Pronto quando
 
-- cadastro confirmado entra no App;
-- usuário suspenso não entra;
-- conta suspensa não entra;
-- sessão expira corretamente;
-- permissões são decididas no backend;
-- convite funciona;
-- perfil e Configurações funcionam.
+- cadastro confirmado entra;
+- usuário/conta suspensos não entram;
+- sessão expira;
+- permissões server-side funcionam;
+- convite, Perfil e Configurações funcionam.
 
 ---
 
-# 16. F2 — Pessoas
+# 17. F2 — Pessoas
 
-## 16.1 Entidade
+## 17.1 Entidade
 
 Naturezas:
 
 - Pessoa Física;
 - Pessoa Jurídica;
-- natureza ainda não identificada pode ser `null`, não uma terceira natureza.
+- natureza ainda não identificada pode ser `null`.
 
-Dados possíveis:
+Dados:
 
 - nome/razão social;
-- nome social/nome fantasia;
+- nome social/fantasia;
 - CPF/CNPJ;
 - nascimento/abertura;
 - nacionalidade;
@@ -1274,101 +1266,70 @@ Dados possíveis:
 - observações;
 - contatos;
 - endereços;
-- identificações adicionais;
-- vínculos com outras Pessoas.
+- identificações;
+- vínculos entre Pessoas.
 
-CPF/CNPJ duplicado no mesmo escritório orienta para o cadastro existente. Nunca sobrescreve automaticamente.
+CPF/CNPJ duplicado no mesmo escritório orienta ao registro existente e não sobrescreve.
 
-## 16.2 API
+## 17.2 API
 
-Família:
+Família `/api/v1/pessoas`.
 
-```text
-/api/v1/pessoas
-```
+Tenant sempre da sessão.
 
-O tenant é sempre derivado da sessão.
+## 17.3 Listagem `/pessoas`
 
-Listagem aceita pesquisa, natureza, paginação e filtros necessários.
-
-## 16.3 Listagem `/pessoas`
+Preferir lista operacional, não tabela, porque a Pessoa é reconhecida por identidade + contatos.
 
 ```text
-[Pessoas]                                             [Adicionar pessoa]
+[Pessoas]                                            [Adicionar pessoa]
 [Pesquisar nome/documento/contato] [Natureza] [paginação]
 
-| Nome | Natureza | Documento | E-mail principal | Telefone principal | Atualizada em |
+Joana Silva                                         [Pessoa Física] [⋯]
+CPF 000.000.000-00
+joana@email.com · (45) 99999-9999 · atualizada em 15/09/2026
+────────────────────────────────────────────────────────────────────
+Empresa Exemplo Ltda                                [Pessoa Jurídica] [⋯]
+CNPJ 00.000.000/0001-00
+financeiro@exemplo.com · atualizada em 14/09/2026
 ```
 
-Linha inteira abre ficha.
+A linha inteira abre a ficha.
 
-## 16.4 Ficha `/pessoas/:id`
+## 17.4 Ficha `/pessoas/:id`
 
 ```text
-[← Pessoas] Nome da Pessoa                     [Natureza] [Editar] [...]
+[← Pessoas] Nome da Pessoa                     [Natureza] [Editar] [⋯]
             Pessoa Física/Jurídica · documento
 [Resumo] [Processos] [Documentos] [Financeiro] [Histórico]
 ```
 
-Abas não autorizadas são omitidas.
+Resumo read-first com Identificação, Classificações, Observações, Contatos, Endereços, Identificações e Vínculos.
 
-### Resumo
+Criar/editar coleção abre Dialog.
 
-```text
-DADOS DA PESSOA
-  Identificação
-  Classificações
-  Observações
+Relações curtas dentro das abas podem usar listas compactas em vez de mini-tabelas quando houver contexto hierárquico.
 
-CONTATOS, ENDEREÇOS, IDENTIFICAÇÕES E VÍNCULOS
-  Contatos        [+]
-  Endereços       [+]
-  Identificações  [+]
-  Vínculos        [+ Vincular pessoa]
-```
+Histórico usa timeline.
 
-Tudo em leitura. Criar/editar itens abre Dialog.
+### Pronto quando
 
-Definir principal é ação do item.
-
-### Processos
-
-```text
-| Processo | Situação | Responsável principal |
-```
-
-### Documentos
-
-Mostra os Documentos reais vinculados à Pessoa.
-
-### Financeiro
-
-```text
-| Lançamento | Vencimento | Principal | Em aberto |
-```
-
-### Histórico
-
-Timeline real, agrupada por dia.
-
-## Pronto quando
-
-- criar/editar/excluir Pessoa;
-- contatos, endereços, identificações e vínculos funcionam;
-- principal funciona;
-- duplicidade é tratada;
-- relações mostram dados reais sem cópia.
+- CRUD;
+- contatos/endereço/identificações/vínculos;
+- principal;
+- duplicidade;
+- relações reais sem cópia.
 
 ---
 
-# 17. F3 — Processos
+# 18. F3 — Processos
 
-## 17.1 Naturezas
+## 18.1 Naturezas
 
 - Judicial;
 - Administrativo.
 
-## 17.2 Judicial
+## 18.2 Judicial
 
 Pode possuir:
 
@@ -1386,9 +1347,9 @@ Pode possuir:
 - partes;
 - monitoramento.
 
-Cadastro manual não faz consulta externa automaticamente para decidir se pode salvar.
+Cadastro manual não consulta fonte externa para autorizar salvamento.
 
-## 17.3 Administrativo
+## 18.3 Administrativo
 
 Pode possuir:
 
@@ -1402,7 +1363,7 @@ Pode possuir:
 - responsável principal;
 - envolvidos.
 
-## 17.4 Partes
+## 18.4 Partes
 
 Polos:
 
@@ -1410,76 +1371,100 @@ Polos:
 - Passivo;
 - Terceiro interessado.
 
-Participação aponta para Pessoa do mesmo escritório.
+Parte aponta para Pessoa da mesma conta.
 
-## 17.5 Monitoramento
+## 18.5 Monitoramento
 
 - somente Judicial elegível;
 - exige número CNJ válido;
-- cadastro manual nasce sem monitoramento;
-- falta de vaga no Plano não impede cadastrar o Processo;
-- desativar preserva Publicações já recebidas;
-- falha externa não muda sozinha o estado de monitoramento.
+- manual nasce sem monitoramento;
+- falta de vaga não impede cadastro;
+- desativação preserva Publicações;
+- falha externa não altera sozinha o estado.
 
-## 17.6 Buscas processuais
+## 18.6 Buscas processuais
 
-Família:
-
-```text
-/api/v1/processos/buscas
-```
+Família `/api/v1/processos/buscas`.
 
 Modos:
 
 - número CNJ;
 - OAB + UF + período quando aplicável.
 
-Busca externa é comando explícito, nunca pesquisa automática de listagem.
+Busca externa é comando explícito.
 
 Ao concluir:
 
 - mostrar candidatos;
 - marcar já cadastrados;
-- usuário seleciona quais adicionar;
-- não cadastrar todos automaticamente.
+- permitir seleção do que adicionar;
+- nunca cadastrar tudo automaticamente.
 
-## 17.7 Listagem `/processos`
+## 18.7 Listagem `/processos`
+
+**Usar `ListView`/lista operacional. Não usar `TableView` para a listagem principal de Processos.**
+
+A tela deve lembrar uma lista jurídica de trabalho, não uma grade de banco de dados.
+
+Topo:
 
 ```text
-[Processos]                                           [Novo processo]
-[Pesquisar] [Natureza] [Monitoramento] [paginação]
-
-| Processo | Situação | Responsável principal | Atualização |
+[Processos]                                              [Novo processo]
+[Pesquisar número, partes ou título.................................]
+[Natureza] [Monitoramento] [Situação] [Mais filtros]       [paginação]
 ```
 
-Primeira célula:
+Item Judicial:
 
 ```text
-identificação principal
-Parte 1 x Parte 2
-Judicial/Administrativo · Monitorado/Não monitorado
+Parte 1 x Parte 2                                      [Situação] [⋯]
+0001234-56.2026.8.16.0001 · Judicial · TJPR
+Responsável: Maria Souza · Monitorado · atualizado em 15/09/2026
+────────────────────────────────────────────────────────────────────
 ```
 
-Quando o usuário não puder ler Pessoas, não vazar nomes de partes.
-
-## 17.8 Ficha `/processos/:id`
+Item Administrativo:
 
 ```text
-[← Processos] Parte 1 x Parte 2                 [Monitoramento] [+] [Editar] [...]
+Título do procedimento                                  [Situação] [⋯]
+Protocolo 12345 · Administrativo · Órgão X
+Responsável: João Silva · atualizado em 14/09/2026
+────────────────────────────────────────────────────────────────────
+```
+
+Hierarquia obrigatória:
+
+1. **título reconhecível:** `Parte 1 x Parte 2` ou título administrativo;
+2. **identificação jurídica:** CNJ/protocolo + natureza + tribunal/órgão;
+3. **contexto operacional:** responsável + monitoramento + atualização.
+
+Regras:
+
+- linha inteira abre ficha;
+- `ActionMenu` não abre ficha;
+- Situação pode aparecer como `StatusLight`/Badge discreto;
+- monitoramento é texto ou status discreto, não coluna;
+- não usar cabeçalho `Processo | Situação | Responsável | Atualização`;
+- não alinhar cada metadado como se fosse célula;
+- sem nomes de partes se usuário não tiver leitura correspondente;
+- seleção múltipla somente se uma ação coletiva real vier a existir no Orvya.
+
+## 18.8 Ficha `/processos/:id`
+
+```text
+[← Processos] Parte 1 x Parte 2                 [Monitoramento] [+] [Editar] [⋯]
               identificação · natureza · Situação · Tribunal
 [Resumo] [Atividades] [Publicações] [Documentos] [Financeiro] [Histórico]
 ```
 
-`+` contextual:
+`+` contextual reutiliza os mesmos Dialogs:
 
 - Nova atividade;
 - Vincular Pessoa;
 - Adicionar Documento;
 - Novo lançamento.
 
-Cada opção reutiliza o mesmo Dialog do módulo de origem com o Processo já herdado.
-
-`...`:
+Menu:
 
 - Gerar documento;
 - ativar/desativar monitoramento;
@@ -1492,41 +1477,33 @@ Cada opção reutiliza o mesmo Dialog do módulo de origem com o Processo já he
 └────────────────────────────┘  └────────────────────┘
 
 PARTES E RESPONSÁVEIS
-  Partes
-  Responsáveis
+  listas de leitura
 
-ÚLTIMOS EVENTOS                                      [Ver Histórico]
+ÚLTIMOS EVENTOS
+  timeline curta
 ```
 
-Em largura estreita, empilhar.
+Em largura estreita empilhar.
 
-### Financeiro do Processo
+A aba Atividades usa o mesmo padrão visual de lista de Atividades da Agenda, já filtrado pelo Processo.
 
-Somente resumo daquele Processo:
+Financeiro do Processo é somente resumo do Processo, sem segundo motor financeiro.
 
-- a receber;
-- vencido;
-- recebido;
-- lançamentos vinculados;
-- Novo lançamento;
-- Ver no Financeiro.
+### Pronto quando
 
-Não criar segundo motor financeiro na ficha.
-
-## Pronto quando
-
-- Judicial e Administrativo funcionam;
-- partes e responsáveis funcionam;
-- título por partes funciona;
-- monitoramento respeita Plano;
-- buscas externas não interferem no cadastro manual;
+- Judicial/Administrativo;
+- partes/responsáveis;
+- título por partes;
+- monitoramento;
+- buscas externas separadas do cadastro manual;
+- lista principal sem grade tabular;
 - ficha agrega relações sem duplicar dados.
 
 ---
 
-# 18. F4 — Atividades, Agenda e Área de trabalho
+# 19. F4 — Atividades, Agenda e Área de trabalho
 
-## 18.1 Atividade
+## 19.1 Atividade
 
 Modalidades:
 
@@ -1541,19 +1518,19 @@ Estados persistidos:
 - Concluída;
 - Cancelada.
 
-`Atrasada` é condição derivada, nunca estado persistido.
+`Atrasada` é condição derivada.
 
 Pendentes inclui atrasadas.
 
-Cada Atividade possui:
+Campos principais:
 
-- item catalogado, que define título;
+- item catalogado/título;
 - modalidade;
 - responsável;
-- data, quando aplicável;
+- data;
 - horário opcional;
 - descrição;
-- Processo opcional, salvo origem que o torne obrigatório;
+- Processo opcional conforme origem;
 - origem;
 - cor do tipo;
 - revisão;
@@ -1565,34 +1542,32 @@ Origem:
 - Processo;
 - tratamento de Publicação.
 
-Criada no Processo herda esse Processo.
+Criada no Processo herda Processo.
 
-Criada a partir de Publicação permanece vinculada ao Processo da Publicação enquanto essa origem existir.
+Criada de Publicação herda obrigatoriamente o Processo da Publicação.
 
-## 18.2 API
+## 19.2 API
 
-Família:
-
-```text
-/api/v1/atividades
-```
+Família `/api/v1/atividades`.
 
 Servidor calcula:
 
-- `overdue`;
+- atraso;
 - marco de atraso;
 - contagens;
-- janela do calendário;
-- cores dos tipos;
+- janela de calendário;
+- cor do tipo;
 - transições válidas.
 
-## 18.3 Agenda `/agenda`
+## 19.3 Agenda `/agenda`
+
+Topo:
 
 ```text
-[Agenda e Atividades]                            [Nova atividade]
+[Agenda e Atividades]                                   [Nova atividade]
 [Lista] [Dia] [Semana] [Mês]
 [‹] período [Hoje] [›]
-[Pesquisar] [Modalidade] [Recorte] [Responsável] [Limpar]
+[Pesquisar atividade/processo] [Modalidade] [Recorte] [Responsável] [Mais filtros]
 Pendentes N · Atrasadas N · Sem data N · Concluídas N
 ```
 
@@ -1608,17 +1583,50 @@ Recortes:
 - Canceladas;
 - Todas.
 
-### Lista
+### 19.3.1 Lista
+
+**Usar `ListView`. Não usar tabela de colunas para a Agenda em modo Lista.**
+
+Agrupar por data quando houver data:
 
 ```text
-| Atividade | Modalidade | Quando | Responsável | Estado | Ações |
+VENCIDAS
+
+● Protocolar contestação                                   [Concluir] [⋯]
+  Silva x Empresa Exemplo
+  Prazo · 14/09/2026 18:00 · Maria Souza
+────────────────────────────────────────────────────────────────────
+
+HOJE · 15 DE SETEMBRO
+
+● Reunião de alinhamento                                   [Concluir] [⋯]
+  Processo 0001234-56.2026.8.16.0001
+  Evento · 14:30–15:30 · João Pereira
+────────────────────────────────────────────────────────────────────
+
+● Revisar documentos                                       [Concluir] [⋯]
+  Sem Processo
+  Tarefa · sem horário · Ana Costa
 ```
 
-Agrupar por data.
+Anatomia:
 
-Linha inteira abre ficha.
+1. marcador visual do tipo;
+2. título da Atividade;
+3. Processo/contexto;
+4. modalidade + data/horário + responsável;
+5. ação rápida aplicável;
+6. menu secundário.
 
-Ações disponíveis conforme estado/capacidade:
+Não exibir cabeçalho:
+
+```text
+Atividade | Modalidade | Quando | Responsável | Estado | Ações
+```
+
+A linha inteira abre a ficha.
+
+Ações conforme estado/capacidade:
 
 - concluir/reabrir;
 - reagendar;
@@ -1627,35 +1635,37 @@ Ações disponíveis conforme estado/capacidade:
 - cancelar;
 - excluir.
 
-### Dia
+A ação mais frequente pode aparecer diretamente; as demais ficam no menu.
+
+### 19.3.2 Dia
 
 - largura inteira;
 - faixa Sem horário;
 - grade temporal;
-- criação no horário escolhido quando permitida;
+- criação em horário escolhido;
 - arraste para reagendar;
-- comando Reagendar sempre disponível como alternativa.
+- comando Reagendar sempre disponível.
 
-### Semana
+### 19.3.3 Semana
 
 - sete dias;
 - faixa Sem horário;
-- linha do horário atual;
-- colisões em raias legíveis;
+- linha de horário atual;
+- colisões em raias;
 - cabeçalho do dia abre Dia.
 
-### Mês
+### 19.3.4 Mês
 
 - sete colunas;
 - poucos itens por dia;
 - `+ N` abre Dia;
-- clicar no dia abre Dia;
+- clicar dia abre Dia;
 - sem painel lateral.
 
-## 18.4 Ficha `/agenda/:id`
+## 19.4 Ficha `/agenda/:id`
 
 ```text
-[← Agenda] ● Título                   [Estado] [ações] [...]
+[← Agenda] ● Título                     [Estado] [ações] [⋯]
            Modalidade · Processo · Quando · Responsável
 
 INFORMAÇÕES DA ATIVIDADE
@@ -1670,9 +1680,9 @@ INFORMAÇÕES DA ATIVIDADE
 
 Editar, Reagendar e Redesignar usam Dialog.
 
-## 18.5 Área de trabalho `/dashboard`
+## 19.5 Área de trabalho `/dashboard`
 
-A Área de trabalho é uma **mesa diária**, não Dashboard analítico.
+A Área de trabalho é mesa diária, não painel de KPI.
 
 Desktop:
 
@@ -1683,88 +1693,80 @@ Desktop:
 ┌──────────────────────────────────────────────┬─────────────────────────┐
 │ MINHAS ATIVIDADES                            │ CALENDÁRIO              │
 │ [Hoje] [Esta semana] [Este mês] [Filtros]   │       ‹ mês ano ›       │
-│                                              │  S T Q Q S S D          │
+│                                              │                         │
 │ VENCIDAS                                     │                         │
-│ ● Atividade                     modalidade   │                         │
-│   contexto                                   │ RESUMO DO ESCRITÓRIO     │
-│   data/hora                      [Concluir]   │ Processos cadastrados N │
-│                                              │ Processos monitorados N │
-│ HOJE / AMANHÃ / DATA                         │ Pessoas cadastradas N   │
-│ ...                                          │ Atividades pendentes N  │
+│ ● Atividade                                  │ RESUMO DO ESCRITÓRIO    │
+│   contexto                       [Concluir]  │ Processos cadastrados N │
+│   data/hora · modalidade                     │ Processos monitorados N │
+│                                              │ Pessoas cadastradas N   │
+│ HOJE / AMANHÃ / DATA                         │ Atividades pendentes N  │
+│ ...                                          │                         │
 │ + N atividades                              │                         │
 │ Ver todas na Agenda                         │                         │
 └──────────────────────────────────────────────┴─────────────────────────┘
 ```
 
-Largura:
-
-- Minhas atividades aproximadamente 67%;
-- coluna lateral aproximadamente 33%;
-- abaixo de aproximadamente 960 px, empilhar com Minhas atividades primeiro.
+Largura aproximada 67/33; abaixo de 960 px empilhar com Minhas atividades primeiro.
 
 ### Minhas atividades
 
+Usar o **mesmo componente base de item de Atividade da Agenda**, com variante compacta.
+
 - somente Atividades do usuário atual;
 - somente Pendentes;
-- Hoje é padrão;
-- modos: Hoje, Esta semana, Este mês;
+- Hoje padrão;
+- Hoje/Esta semana/Este mês mutuamente exclusivos;
 - Mais filtros: Modalidade e Sem data;
-- modos são mutuamente exclusivos;
-- dia escolhido no calendário substitui o modo de período;
+- dia do calendário substitui período;
 - `Voltar para hoje` restaura Hoje;
-- vencidas aparecem primeiro;
-- mostrar até 12 itens;
-- excedente vira `+ N atividades`;
+- vencidas primeiro;
+- até 12 itens;
+- excedente `+ N atividades`;
 - sem paginação;
-- linha inteira abre Atividade;
+- linha abre Atividade;
 - única ação rápida: Concluir.
 
-Atividade vencida difere **somente** pela data/hora em cor negativa Spectrum.
+Vencida difere **somente** pela data/hora em cor negativa Spectrum.
 
-Não usar selo de atraso, fundo diferente ou borda diferente na mesa.
+Não usar selo, fundo ou borda especial para atraso.
 
 ### Calendário compacto
 
 - mês;
-- semana segunda → domingo;
+- segunda → domingo;
 - cabeçalho apenas `‹ MÊS ANO ›`;
-- sem itens escritos dentro dos dias;
-- sem horários;
-- sem arraste;
-- um dia com ao menos uma Atividade Pendente do usuário recebe uma única marca discreta;
-- quantidade não altera a marca;
-- trocar mês não muda a lista;
-- escolher dia filtra a lista na própria Área de trabalho.
+- sem texto de Atividades dentro dos dias;
+- sem horários/arraste;
+- um dia com Atividade Pendente recebe uma marca discreta;
+- quantidade não muda a marca;
+- trocar mês não muda lista;
+- clicar dia filtra lista.
 
 ### Resumo do escritório
 
-Exatamente quatro linhas:
+Exatamente:
 
 1. Processos cadastrados;
 2. Processos monitorados;
 3. Pessoas cadastradas;
 4. Atividades pendentes neste mês.
 
-Sem Card por linha, gráfico, ícone decorativo ou número gigante.
+Quatro linhas de texto, sem cards individuais, gráficos, ícones decorativos ou números gigantes.
 
-Cada linha é atalho para o recorte correspondente.
+### Pronto quando
 
-`Indisponível` nunca vira zero.
-
-## Pronto quando
-
-- CRUD/transições de Atividade funcionam;
-- atraso é calculado;
-- quatro visões da Agenda funcionam;
-- retorno de Dia preserva contexto de Mês/Semana;
-- Área de trabalho segue exatamente a mesa diária acima;
-- nenhuma métrica removida reaparece na mesa.
+- CRUD/transições;
+- atraso calculado;
+- Lista/Dia/Semana/Mês;
+- Lista é realmente uma lista, não tabela;
+- retorno de calendário preserva contexto;
+- Área de trabalho segue mesa diária.
 
 ---
 
-# 19. F5 — Publicações, Pesquisa e Notificações
+# 20. F5 — Publicações, Pesquisa e Notificações
 
-# 19.1 Publicações
+## 20.1 Publicações
 
 Publicação nasce somente da integração judicial autorizada.
 
@@ -1773,11 +1775,11 @@ Condições:
 - Nova;
 - Tratada.
 
-A condição Tratada é operacional e não declara efeito jurídico.
+`Tratada` é operacional e não declara efeito jurídico.
 
-Conteúdo ausente e falha de carregamento são estados diferentes.
+Conteúdo ausente e falha são estados diferentes.
 
-Conteúdo recebido é apresentado como texto seguro.
+Conteúdo é apresentado como texto seguro.
 
 Ações:
 
@@ -1788,59 +1790,48 @@ Ações:
 
 Criar providência cria Atividade real.
 
-Concluir preserva a Publicação e marca Tratada.
+Concluir preserva a Publicação.
 
-Descartar remove a Publicação sem apagar Atividades independentes já criadas.
+Descartar remove a Publicação sem apagar Atividades independentes.
 
-## Listagem `/publicacoes`
+### Listagem `/publicacoes`
+
+Preferir lista operacional:
 
 ```text
 [Publicações]
 [Novas N] [Tratadas N] [Total N]
 [Pesquisar] [Condição] [paginação]
 
-| Processo | Tipo | Data da fonte | Recebida em | Condição | Trecho | Ações |
+Tipo da publicação                                      [Nova] [⋯]
+Processo 0001234-56.2026.8.16.0001 · TJPR
+Fonte 14/09/2026 · recebida 15/09/2026
+Trecho curto do conteúdo recebido…
+────────────────────────────────────────────────────────────────────
 ```
-
-Trecho curto de conteúdo, sem despejar texto longo na tabela.
 
 Linha abre Publicação, não Processo.
 
-## Ficha `/publicacoes/:id`
-
-Quando veio da listagem:
+### Ficha `/publicacoes/:id`
 
 ```text
 [Anterior]                         12 de 48                         [Próxima]
-```
 
-```text
-[← Publicações] Publicação   [Condição] [Criar providência] [Concluir] [...]
-               Processo · Tipo · Tribunal · recebida em...
+[← Publicações] Publicação    [Condição] [Criar providência] [Concluir] [⋯]
+                Processo · Tipo · Tribunal · recebida em...
 
-[nota jurídica]
 CONTEÚDO RECEBIDO
 PROCESSO
 PROVIDÊNCIAS
 ```
 
-`Concluir e abrir a próxima`:
+`Concluir e abrir a próxima` só navega após sucesso e preserva recorte original.
 
-1. executa a mesma conclusão normal;
-2. usa a mesma confirmação/justificativa;
-3. relê a fila com o recorte original;
-4. navega somente após sucesso;
-5. sem próxima, retorna à listagem preservando contexto.
+## 20.2 Pesquisa Global
 
-## 19.2 Pesquisa Global
+Família `/api/v1/pesquisa`.
 
-Família:
-
-```text
-/api/v1/pesquisa
-```
-
-Grupos possíveis conforme capacidade:
+Grupos conforme capacidade:
 
 - Pessoas;
 - Processos;
@@ -1848,95 +1839,61 @@ Grupos possíveis conforme capacidade:
 - Publicações;
 - Documentos;
 - Financeiro;
-- Relatórios salvos quando aplicável.
-
-Regras:
+- Relatórios salvos.
 
 - mínimo 2 caracteres;
 - máximo 200;
-- grupo vedado não aparece nem revela quantidade;
-- pesquisa é somente consultiva;
-- resultado abre registro canônico.
+- grupo vedado não existe na resposta;
+- somente consultiva;
+- resultado abre destino canônico.
 
-Página `/pesquisa` usa o mesmo termo e semântica do cabeçalho.
+Página `/pesquisa` apresenta resultados como listas agrupadas, não como tabela universal.
 
-## 19.3 Notificações
+## 20.3 Notificações
 
-Notificação pertence ao destinatário.
+Pertence ao destinatário.
 
 Tipos iniciais:
 
 - nova Publicação;
 - Atividade atribuída;
-- Prazo próximo;
-- Prazo vencido;
+- Prazo próximo/vencido;
 - Audiência próxima;
-- aviso interno do escritório.
+- aviso interno.
 
-`Lido` não significa `resolvido`.
+`Lido` não significa resolvido.
 
-Abrir Notificação nova pode marcar a leitura individual.
+Tela `/alertas` usa lista de cards/itens Spectrum com mensagem, contexto, instante e destino.
 
-Ações:
+### Pronto quando
 
-- marcar uma como lida;
-- marcar todas como lidas;
-- preferências pessoais.
-
-Tela `/alertas`:
-
-- Todos;
-- Novos;
-- Lidos;
-- tipo opcional;
-- mensagem;
-- contexto;
-- instante;
-- destino.
-
-## Pronto quando
-
-- ingestão deduplica Publicações;
-- sequência de tratamento funciona;
+- Publicações deduplicam;
+- sequência funciona;
 - Pesquisa não vaza grupo proibido;
-- Notificações são por destinatário;
-- leitura coletiva não altera a causa do alerta.
+- Notificações são por destinatário.
 
 ---
 
-# 20. F6 — Arquivos, Documentos e Modelos
+# 21. F6 — Arquivos, Documentos e Modelos
 
-## 20.1 Serviço de arquivos
+## 21.1 Arquivos
 
-Todo arquivo persistente passa por um único serviço.
+Fluxo central:
 
-Fluxo:
-
-1. cliente valida formato/tamanho apenas por conveniência;
+1. cliente valida por conveniência;
 2. servidor valida cota e reserva;
-3. cliente envia bytes;
-4. servidor calcula tamanho real e SHA-256;
-5. servidor confirma;
-6. somente arquivo confirmado pode ser associado ao registro de negócio.
+3. bytes são enviados;
+4. servidor calcula tamanho/SHA-256;
+5. confirma;
+6. somente confirmado pode virar vínculo de negócio.
 
-Persistir:
+Persistir tenant, finalidade, chave física, nome original, tamanho, MIME, SHA-256 e estado.
 
-- tenant;
-- finalidade;
-- chave física;
-- nome original;
-- tamanho;
-- MIME;
-- SHA-256;
-- estado.
+Chave física usa tenant + UUID.
 
-Chave física usa tenant + UUID, nunca nome do escritório.
+Download autenticado.
 
-Download sempre autenticado.
-
-## 20.2 Documento
-
-Documento possui:
+## 21.2 Documento
 
 - nome;
 - Tipo de Documento;
@@ -1945,85 +1902,65 @@ Documento possui:
 - revisão;
 - vínculos.
 
-Pode se vincular a:
+Pode vincular Pessoa, Processo, Atividade, Publicação e Lançamento.
 
-- Pessoa;
-- Processo;
-- Atividade;
-- Publicação;
-- Lançamento.
+Vincular não copia bytes. Desvincular não exclui Documento.
 
-Vincular não copia bytes.
+## 21.3 Exclusão
 
-Desvincular não exclui Documento.
+Se remoção física falhar:
 
-## 20.3 Exclusão documental
-
-Excluir Documento remove registro, vínculos e objeto físico.
-
-Se remoção física não for confirmada:
-
-- manter estado de exclusão pendente;
-- bloquear edição;
-- bloquear download;
-- bloquear vínculo;
-- bloquear substituição;
+- estado de exclusão pendente;
+- bloquear edição/download/vínculo/substituição;
 - continuar contando espaço;
-- oferecer `Retomar exclusão`.
+- ação `Retomar exclusão`.
 
-## 20.4 Biblioteca `/documentos/biblioteca`
+## 21.4 Biblioteca `/documentos/biblioteca`
+
+Preferir lista operacional:
 
 ```text
 [Documentos]                       [Gerenciar modelos] [Incluir Documento]
-[Requisitos de envio ▾]
 [Pesquisar] [Tipo de Documento] [paginação]
 
-| Documento | Tipo | Arquivo | Tamanho | Cadastrado em |
+Nome do documento                                       [Tipo] [⋯]
+arquivo-original.pdf · 1,8 MB
+Cadastrado em 15/09/2026 · Processo/Pessoa quando houver
+────────────────────────────────────────────────────────────────────
 ```
 
-## 20.5 Inclusão de Documento
+## 21.5 Inclusão
 
-Um único Dialog:
+Dialog único:
 
 1. selecionar arquivo;
-2. transferir e confirmar;
+2. transferir/confirmar;
 3. nome;
 4. tipo;
 5. descrição;
-6. vínculo opcional quando iniciado em outro registro;
+6. vínculo opcional;
 7. cadastrar.
 
-Nunca cadastrar Documento antes da confirmação do arquivo.
-
-## 20.6 Ficha `/documentos/biblioteca/:id`
+## 21.6 Ficha
 
 ```text
-[← Documentos] Nome             [Visualizar] [Baixar] [Substituir] [...]
+[← Documentos] Nome                     [Visualizar] [Baixar] [Substituir] [⋯]
                Tipo · arquivo
 
 DOCUMENTO
   Pré-visualização
-  divisor
   Dados
-  divisor
   Vínculos
-  divisor
   Arquivo
 
 HISTÓRICO
 ```
 
-Prévia local para PDF e imagens suportadas.
+PDF/imagem com preview; outros formatos oferecem download.
 
-Outros formatos mostram indisponibilidade da prévia e oferecem download.
+## 21.7 Modelos DOCX
 
-## 20.7 Modelos DOCX
-
-Destino único:
-
-```text
-/conta/configuracoes/modelos
-```
+Rota `/conta/configuracoes/modelos`.
 
 Contextos:
 
@@ -2034,56 +1971,38 @@ Operações:
 
 - listar;
 - cadastrar;
-- editar metadados;
-- substituir DOCX-base;
+- editar;
+- substituir base;
 - validar;
 - excluir;
-- consultar inventário de variáveis.
+- consultar variáveis.
 
-Geração começa na Pessoa ou no Processo, nunca na tela de Modelos.
+Geração começa em Pessoa ou Processo.
 
 Sintaxe:
 
 ```text
 {{contexto.campo}}
-```
-
-Variável aberta:
-
-```text
 {{aberto.nome}}
 ```
 
-Fluxo de geração:
+Fluxo resolve variáveis, solicita abertas, gera DOCX, converte PDF se solicitado e salva na Biblioteca somente por ação explícita.
 
-1. selecionar Modelo compatível;
-2. resolver variáveis oficiais;
-3. solicitar valores abertos;
-4. gerar DOCX;
-5. converter para PDF se solicitado e disponível;
-6. entregar bytes;
-7. salvar na Biblioteca somente por ação explícita.
+### Pronto quando
 
-Token inválido torna o Modelo inválido até correção.
-
-Substituir tokens também em tabelas, cabeçalhos e rodapés quando a biblioteca permitir com segurança.
-
-## Pronto quando
-
-- reserva/upload/confirmação funcionam;
-- cota é aplicada;
-- Biblioteca funciona;
-- vínculos funcionam;
-- substituição preserva cadastro/vínculos;
-- exclusão pendente é retomável;
-- Modelo válido gera arquivo real;
+- upload/cota;
+- Biblioteca;
+- vínculos;
+- substituição;
+- exclusão retomável;
+- geração válida;
 - Modelo inválido não gera.
 
 ---
 
-# 21. F7 — Financeiro
+# 22. F7 — Financeiro
 
-## 21.1 Lançamento
+## 22.1 Lançamento
 
 Naturezas:
 
@@ -2094,133 +2013,85 @@ Relações opcionais:
 
 - Pessoa;
 - Processo;
-- Documento quando aplicável.
+- Documento.
 
-Situação calculada:
+Situações calculadas:
 
 - Em aberto;
 - Parcialmente liquidado;
 - Liquidado;
 - Cancelado.
 
-Situação não é seletor livre.
-
 `Vencido` é condição derivada.
 
-## 21.2 Regras
+## 22.2 Regras
 
-- baixa reduz saldo em aberto;
-- estorno recompõe situação;
+- baixa reduz aberto;
+- estorno recompõe;
 - cancelamento preserva histórico;
-- reabertura segue regra de estado;
-- transferência gera movimentos relacionados e não vira Receita/Despesa operacional comum;
-- saldos dependem de abertura + movimentos reais;
-- saldo sem base suficiente é `Indeterminado`, nunca `R$ 0,00`;
-- servidor calcula todos os totais.
+- transferência gera movimentos relacionados, não Receita/Despesa comum;
+- saldos dependem de abertura + movimentos;
+- saldo insuficientemente determinado é `Indeterminado`;
+- servidor calcula totais.
 
-O Orvya registra fatos financeiros declarados. Não executa operação bancária externa por causa de uma baixa ou transferência interna.
+Orvya registra fatos financeiros declarados, não executa operação bancária externa.
 
-## 21.3 Navegação
+## 22.3 Navegação
 
 ```text
 Lançamentos | Movimentações | Fluxo de caixa | Conciliação bancária | Configurações
 ```
 
-## 21.4 Lançamentos `/financeiro/lancamentos`
+## 22.4 Lançamentos
+
+Aqui `TableView` é adequado, pois valores precisam ser comparados por coluna.
 
 ```text
-[Financeiro]                                      [Novo lançamento] [...]
-[contas/saldos]
-[Pesquisa] [Natureza] [Situação] [Período] [Mais filtros] [paginação]
-
-| Lançamento | Natureza | Principal | Em aberto | Vencimento | Situação |
-
-Receitas em aberto: ...      Despesas em aberto: ...
+Lançamento | Natureza | Principal | Em aberto | Vencimento | Situação
 ```
 
-`...`:
+Valores monetários alinhados à direita.
 
-- Informar saldo de abertura;
-- Registrar transferência;
-- Atualizar.
+Filtros e totais representam o conjunto inteiro filtrado.
 
-Filtros secundários:
+## 22.5 Ficha
 
-- campo de data;
-- categoria;
-- centro de custo;
-- responsável;
-- ordenação;
-- direção;
-- período personalizado.
+Read-first com dados, relações, parcelas, baixas, Documentos e histórico.
 
-Totais são do conjunto filtrado inteiro.
+## 22.6 Movimentações
 
-## 21.5 Ficha `/financeiro/lancamentos/:id`
+Extrato tabular com período, origem, forma e saldo corrido somente quando calculável.
 
-Read-first com:
+## 22.7 Fluxo
 
-- dados;
-- relações;
-- parcelas quando existirem;
-- baixas;
-- Documentos;
-- histórico.
+Entradas/saídas temporais e totais do servidor.
 
-Ações conforme situação:
+## 22.8 Conciliação
 
-- Editar;
-- Baixar;
-- Estornar;
-- Cancelar;
-- Reabrir.
+Tela própria sobre os mesmos fatos.
 
-## 21.6 Movimentações
+## 22.9 Configurações
 
-Extrato com:
-
-- pesquisa;
-- período efetivo;
-- origem;
-- forma;
-- ordenação;
-- saldo corrido somente quando o recorte permite cálculo correto.
-
-## 21.7 Fluxo de caixa
-
-Entradas, saídas e totais temporais calculados pelo servidor.
-
-## 21.8 Conciliação
-
-Tela própria sobre os mesmos fatos financeiros. Não criar domínio financeiro paralelo.
-
-## 21.9 Configurações
-
-Gerenciar:
-
-- contas bancárias e caixas;
+- contas bancárias/caixas;
 - categorias;
 - centros de custo;
 - formas de pagamento.
 
-Configurações do escritório não replica essas famílias.
+### Pronto quando
 
-## Pronto quando
-
-- valores permanecem decimais exatos;
-- baixa/estorno/cancelamento funcionam;
-- idempotência impede efeito duplicado;
-- transferência fecha contabilmente;
-- saldos e totais são reproduzíveis;
-- filtros e extrato retornam valores coerentes.
+- decimal exato;
+- baixa/estorno/cancelamento;
+- idempotência;
+- transferência;
+- saldos/totais reproduzíveis.
 
 ---
 
-# 22. F8 — Relatórios
+# 23. F8 — Relatórios
 
-Relatório é projeção de dados reais, não tabela duplicada.
+Relatório é projeção dos dados reais.
 
-Fontes iniciais:
+Fontes:
 
 - Atividades;
 - Publicações;
@@ -2230,115 +2101,72 @@ Fontes iniciais:
 - Financeiro;
 - combinações autorizadas.
 
-Definição pode declarar:
+Definição pode declarar período, filtros, colunas, ordenação, agrupamento e totais.
 
-- período;
-- dimensão temporal;
-- filtros tipados;
-- colunas;
-- ordenação;
-- agrupamento;
-- totais.
-
-## 22.1 Tela `/relatorios`
+## 23.1 Tela `/relatorios`
 
 ```text
 [Relatórios]
 [Relatório ▾] [Executar] [Exportar ▾]
 
-[formulário gerado pela definição]
-
-[parâmetros realmente executados]
+[formulário da definição]
+[parâmetros executados]
 [tabela paginada]
 [totais]
 ```
 
-Regras:
+Aqui `TableView` é apropriado.
 
-- o formulário pode mudar depois da execução;
-- resultado permanece ligado aos parâmetros executados;
-- mostrar aviso quando houver alterações ainda não aplicadas;
-- nova execução substitui a referência atual;
-- paginação e exportação usam a mesma referência;
-- total representa conjunto inteiro.
+Resultado permanece ligado aos parâmetros executados; alterações ainda não aplicadas geram aviso.
 
-Exportações:
+Exportações PDF/XLSX usam o mesmo recorte.
 
-- PDF;
-- XLSX.
+### Pronto quando
 
-Acima de limite técnico, recusar com instrução para restringir filtros/colunas. Não cortar silenciosamente.
-
-## 22.2 Definições salvas
-
-`/relatorios/modelos` administra definições salvas se esse recurso for implementado.
-
-Não criar segundo motor de Relatórios.
-
-## Pronto quando
-
-- definição tipada gera formulário;
+- definição gera formulário;
 - servidor aplica filtros/colunas/ordem;
-- tabela, total, paginação e exportação usam a mesma referência;
-- PDF/XLSX representam o conjunto executado.
+- tabela, total, paginação e exportação usam mesma referência.
 
 ---
 
-# 23. F9 — Administração da Plataforma
+# 24. F9 — Administração da Plataforma
 
-Admin é uma aplicação própria em `admin.orvya.net`.
+Admin é aplicação própria em `admin.orvya.net`.
 
-Administrador da Plataforma é identidade global e não pertence a escritório.
+Administrador da Plataforma é global, não pertence a escritório.
 
-Sempre deve existir ao menos um Administrador da Plataforma ativo.
+Sempre deve existir ao menos um ativo.
 
-Não permitir suspender ou excluir o último ativo.
-
-# 23.1 Cabeçalho do Admin
-
-Desktop:
+## 24.1 Cabeçalho
 
 ```text
 [ORVYA · Administração da Plataforma › Página] [ PESQUISA ADMINISTRATIVA ] [◉]
 ```
 
-A Pesquisa Administrativa fica **centralizada geometricamente no cabeçalho**, usando a mesma estrutura de três colunas do App.
+Pesquisa centralizada geometricamente.
 
-Botões do cabeçalho do Admin também são **somente ícones**:
+Botões do cabeçalho somente ícones.
 
-- Menu em largura estreita;
-- conta/sessão;
-- qualquer ação futura do cabeçalho.
-
-Não usar botão textual `Sessão` no header.
-
-O acionador da conta é Avatar/ícone com `aria-label` e Tooltip.
-
-# 23.2 Sidebar
+## 24.2 Sidebar
 
 ```text
 VISÃO GERAL
   Dashboard
-
 PLATAFORMA
   Escritórios
   Usuários
   Planos
-
 ACESSO
   Administradores
   Permissões
-
 CADASTROS
   Catálogos Iniciais
   Catálogos Referenciais
   Variáveis de Documentos
-
 INTEGRAÇÕES
   Integrações e conexões
   Domínios e endpoints
   APIs utilizadas
-
 OPERAÇÃO
   Visão operacional
   Serviços
@@ -2347,18 +2175,16 @@ OPERAÇÃO
   Migrations
   Capacidade
   Operações e Limitações
-
 AUDITORIA
   Histórico da Plataforma
   Conciliação Técnica
-
 CONFIGURAÇÕES
   Configurações globais
 ```
 
-Uma única casca. Não criar seleção inicial entre painéis.
+Uma única casca.
 
-# 23.3 Dashboard
+## 24.3 Dashboard
 
 Ordem:
 
@@ -2367,130 +2193,56 @@ Ordem:
 3. Distribuição por Plano;
 4. Atividade recente.
 
-Pendências podem incluir:
+CPU/memória/disco ficam em Operação.
 
-- contas que exigem atenção;
-- Teste Grátis expirado;
-- consumo acima de limite;
-- convite com envio pendente;
-- integração não configurada/diagnóstico ruim;
-- pendência operacional real.
+## 24.4 Escritórios
 
-Estado da plataforma:
-
-- contas ativas;
-- contas suspensas;
-- contas em teste;
-- usuários ativos;
-- Processos monitorados;
-- armazenamento utilizado.
-
-CPU, memória e disco ficam em Operação, não no Dashboard de negócio.
-
-# 23.4 Escritórios
-
-Listagem:
-
-```text
-[Escritórios] [Novo escritório]
-[Pesquisa] [Status] [Plano] [paginação]
-
-| Escritório | Status | Plano | Usuários | Processos monitorados | Criado em |
-```
+Admin continua podendo usar `TableView`, pois é gestão comparativa.
 
 Ficha:
 
 ```text
-[← Escritórios] Nome                   [Status] [Plano] [Acessar] [Editar] [...]
+[← Escritórios] Nome                   [Status] [Plano] [Acessar] [Editar] [⋯]
 [Resumo] [Usuários] [Plano e utilização] [Histórico]
 ```
 
-Resumo contém metadados administrativos, não conteúdo jurídico.
-
 `Acessar` inicia acesso assistido.
 
-# 23.5 Usuários globais
+## 24.5 Usuários globais
 
-Pesquisa sobre usuários de contas.
+Somente metadados administrativos, sem conteúdo jurídico.
 
-Exibir somente:
+## 24.6 Planos
 
-- nome;
-- e-mail;
-- escritório;
-- status;
-- Administrador do Sistema;
-- criação/atualização.
+CRUD com nome, descrição, estrutural, recursos e limites.
 
-Não expor conteúdo jurídico.
+Excluir Plano em uso exige destino.
 
-# 23.6 Planos
+## 24.7 Administradores
 
-CRUD de Planos.
+Adicionar, editar, suspender, reativar, excluir.
 
-Campos:
+Não suspender/excluir último ativo.
 
-- nome;
-- descrição;
-- estrutural;
-- recursos;
-- limites.
+## 24.8 Permissões
 
-Excluir Plano em uso exige Plano de destino e reatribuição das contas.
+Registro técnico de capacidades em tabela administrativa.
 
-# 23.7 Administradores
+## 24.9 Catálogos
 
-Ações:
-
-- adicionar;
-- editar;
-- suspender;
-- reativar;
-- excluir.
-
-Proteção do último ativo é obrigatória no backend.
-
-# 23.8 Permissões
-
-Mostrar registro real de capacidades.
-
-Campos úteis:
-
-```text
-Chave | Rótulo | Operação | Depende de | Recurso do Plano | Situação
-```
-
-Concessão de permissão ocorre na ficha do usuário do escritório, não nesta tabela global.
-
-# 23.9 Catálogos
-
-Separar:
-
-- Catálogos Iniciais;
-- Catálogos Referenciais;
+- Iniciais;
+- Referenciais;
 - Variáveis de Documentos.
 
-Catálogo Inicial fornece valores padrão para novas contas quando a regra pedir.
+## 24.10 Integrações
 
-Catálogo Referencial é global e usado em dados como geografia e referências processuais.
-
-Variável de Documento possui:
-
-- token;
-- descrição;
-- origem;
-- contextos;
-- uso.
-
-# 23.10 Integrações
-
-Somente estas famílias externas fazem parte do produto:
+Somente:
 
 1. E-mail;
-2. Armazenamento de objetos;
+2. Armazenamento;
 3. Comunica CNJ.
 
-Cada ficha, quando aplicável:
+Ficha:
 
 ```text
 Estado
@@ -2503,170 +2255,87 @@ Configuração
 Último erro
 ```
 
-Salvar, Testar e Ativar são operações diferentes.
+Salvar, Testar e Ativar são efeitos distintos.
 
-Segredos:
+Segredos nunca retornam completos.
 
-- nunca retornam completos;
-- nunca aparecem em HTML;
-- leitura mostra apenas presença/configuração;
-- substituição de segredo grava novo valor criptografado.
+### E-mail
 
-## E-mail
+Confirmação de cadastro, convite, recuperação e mensagens transacionais implementadas.
 
-Usado por:
+### Armazenamento
 
-- confirmação de cadastro;
-- convite;
-- recuperação de senha;
-- mensagens transacionais explicitamente implementadas.
+S3/compatível para Documentos, Modelos, logos, fotos e derivados explicitamente persistidos.
 
-## Armazenamento
+### Comunica CNJ
 
-Compatível com S3 e endpoints equivalentes.
+Busca por Processo/OAB, monitoramento e Publicações.
 
-Usado por:
+Uma rotina central processa monitoramentos elegíveis.
 
-- Documentos;
-- Modelos;
-- logos;
-- fotos de perfil;
-- derivados persistidos somente quando a operação pedir salvamento.
+## 24.11 Operação
 
-## Comunica CNJ
-
-Usado por:
-
-- busca por Processo;
-- busca por OAB;
-- monitoramento;
-- recebimento de Publicações.
-
-Uma rotina central varre monitoramentos elegíveis. Não criar agendador por Processo.
-
-# 23.11 Operação
-
-## Visão operacional
-
-Mostrar:
+Visão operacional:
 
 - API;
 - worker;
 - banco;
-- armazenamento;
+- storage;
 - e-mail;
-- integração judicial;
+- Comunica CNJ;
 - versão da aplicação;
 - revisão do schema;
-- últimas execuções relevantes.
+- execuções.
 
-## Serviços
+Comandos allowlisted, nunca shell arbitrário.
 
-Listar somente componentes conhecidos.
+Migrations somente leitura no Admin; aplicação ocorre no deploy.
 
-Comandos são allowlisted. Nunca aceitar shell arbitrário pela API.
+Capacidade mostra CPU, memória e disco.
 
-## Execuções
+## 24.12 Auditoria
 
-Estados:
+TableView com Data/hora, Área, Ação, Autor, Alvo e Resultado.
 
-- Em andamento;
-- Concluída;
-- Erro.
+Conciliação Técnica não vira editor genérico do banco.
 
-Mostrar tipo, início, fim, resumo e erro sanitizado.
+### Pronto quando
 
-## Banco de dados
-
-Mostrar estado e metadados seguros.
-
-Nunca exibir DSN completo ou credenciais.
-
-## Migrations
-
-Nesta reconstrução, página somente de leitura:
-
-```text
-| Revisão | Descrição | Situação | Aplicada em |
-```
-
-Migration é aplicada pelo deploy.
-
-## Capacidade
-
-CPU, memória e disco.
-
-## Operações e Limitações
-
-Mostrar recursos bloqueados e razões objetivas.
-
-# 23.12 Auditoria
-
-Histórico da Plataforma:
-
-```text
-| Data/hora | Área | Ação | Autor | Alvo | Resultado |
-```
-
-Filtros:
-
-- período;
-- área;
-- ação;
-- autor;
-- texto.
-
-Conciliação Técnica mostra inconsistências operacionais detectadas, sem transformar a tabela em editor genérico de banco.
-
-## Pronto quando
-
-- login Admin é separado do App;
-- casca única funciona;
-- Pesquisa Administrativa funciona;
-- contas, usuários, Planos e administradores funcionam;
-- integrações mostram estado real;
-- operação não aceita comando arbitrário;
-- acesso assistido preserva identidade do administrador;
-- auditoria registra ações críticas.
+- login separado;
+- casca única;
+- pesquisa;
+- contas/usuários/Planos/admins;
+- integrações reais;
+- operação segura;
+- acesso assistido;
+- auditoria.
 
 ---
 
-# 24. Worker
+# 25. Worker
 
-Um único worker atende toda a instalação.
+Um worker para toda instalação.
 
 Responsabilidades:
 
 - monitoramento judicial;
-- recebimento e deduplicação de Publicações;
+- recebimento/deduplicação de Publicações;
 - expiração do Teste Grátis;
-- envio transacional de e-mail;
-- limpeza de reservas de arquivo abandonadas;
+- envio de e-mail;
+- limpeza de reservas abandonadas;
 - conversões documentais demoradas;
 - reconciliação temporal de Notificações;
-- demais tarefas persistentes explicitamente exigidas.
+- tarefas persistentes necessárias.
 
-Não criar worker por tenant.
+Tarefa possui ID, tipo, payload mínimo, estado, tentativas, próxima tentativa, erro sanitizado, timestamps e idempotência quando necessária.
 
-Tarefa persistente possui:
-
-- ID;
-- tipo;
-- payload mínimo;
-- estado;
-- tentativas;
-- próxima tentativa;
-- erro resumido;
-- timestamps;
-- chave de idempotência quando necessária.
-
-Retries são limitados e idempotentes.
+Retries limitados.
 
 ---
 
-# 25. Histórico funcional
+# 26. Histórico funcional
 
-Histórico do escritório e Histórico da Plataforma são separados.
+Histórico do escritório e da Plataforma são separados.
 
 Fato mínimo:
 
@@ -2683,94 +2352,76 @@ detail seguro
 justification opcional
 ```
 
-Fatos típicos:
-
-- criação;
-- edição relevante;
-- mudança de Situação;
-- parte adicionada/removida;
-- responsável alterado;
-- Atividade criada/vinculada;
-- Documento vinculado/desvinculado;
-- operação financeira vinculada;
-- monitoramento alterado.
-
 Não criar botão genérico `Adicionar histórico`.
 
-Um evento manual de caso é Atividade da modalidade Evento.
+Evento manual do caso é Atividade modalidade Evento.
 
 ---
 
-# 26. Estados da interface
+# 27. Estados da interface
 
-Toda consulta trata explicitamente:
+Toda consulta trata:
 
 - carregando;
 - vazio;
 - erro;
 - indisponível;
 - pronto;
-- atualizando mantendo conteúdo anterior, quando seguro.
+- atualizando com conteúdo anterior, quando seguro.
 
 Regras:
 
-- `Indisponível` não é zero;
+- indisponível não é zero;
 - horário ausente não vira `00:00`;
 - saldo indeterminado não vira zero;
-- falta de permissão não vira lista vazia enganosa;
-- recurso fora do Plano não é apresentado como falha técnica;
-- acervo vazio e filtro sem resultado usam mensagens diferentes.
-
-Use componentes Spectrum adequados para feedback e estado.
+- sem permissão não vira lista vazia enganosa;
+- recurso fora do Plano não vira erro técnico;
+- acervo vazio e filtro sem resultado são mensagens distintas.
 
 ---
 
-# 27. Acessibilidade
+# 28. Acessibilidade
 
-Preservar os comportamentos oficiais do Spectrum 2.
-
-Obrigatório:
+Preservar Spectrum 2:
 
 - teclado completo;
 - foco visível;
 - labels reais;
 - nomes acessíveis de botões de ícone;
-- `aria-current` na navegação;
+- `aria-current`;
 - foco contido em Dialog;
-- foco devolvido ao acionador ao fechar;
+- retorno de foco ao fechar;
 - contraste;
 - toque;
 - movimento reduzido;
 - alto contraste;
 - texto ampliado;
-- tabela navegável;
+- listas e tabelas navegáveis;
 - cor nunca como único sinal.
 
-Não remover outline/focus ring para estética.
+Não remover focus ring.
 
 ---
 
-# 28. Deploy
+# 29. Deploy
 
-Objetivo: instalação ou atualização controlada em VPS Linux com Docker disponível.
-
-Fluxo:
+Objetivo: instalação/atualização controlada em VPS Linux com Docker.
 
 ```text
 1. validar .env
 2. construir imagens
 3. iniciar PostgreSQL
-4. aguardar readiness do banco
-5. executar alembic upgrade head
+4. aguardar banco
+5. alembic upgrade head
 6. iniciar API
 7. iniciar worker
 8. iniciar ops
-9. construir App e Admin
+9. construir App/Admin
 10. publicar assets
 11. iniciar/recarregar Nginx
 12. verificar /api/v1/saude
 13. verificar /api/v1/saude/pronto
-14. smoke HTTP dos dois hosts
+14. smoke dos dois hosts
 ```
 
 Hosts:
@@ -2780,87 +2431,75 @@ app.orvya.net
 admin.orvya.net
 ```
 
-`/api/v1/*` é proxy para a API.
-
 Arquivos de usuário não ficam em diretório público do Nginx.
 
-TLS usa certificado válido e renovação automatizada pela infraestrutura escolhida.
+TLS válido com renovação automatizada pela infraestrutura.
 
 ---
 
-# 29. Dados iniciais
+# 30. Dados iniciais
 
-Criar somente o necessário para funcionamento:
+Criar somente:
 
 - identidade da instalação;
 - primeiro Administrador da Plataforma por comando seguro;
 - Plano estrutural de Teste Grátis;
 - recursos padrão;
-- catálogos mínimos que impediriam fluxos fundamentais de nascerem travados.
+- catálogos mínimos necessários.
 
 Não criar Pessoas, Processos, Atividades, Publicações ou Lançamentos fictícios.
 
-## 29.1 Catálogos mínimos
-
-Conta:
+Catálogos mínimos:
 
 - Situações de Processo;
-- Tipos de Audiência;
-- Tipos de Prazo;
-- Tipos de Tarefa;
-- Tipos de Evento;
+- Tipos de Audiência/Prazo/Tarefa/Evento;
 - Formas de realização;
 - Tipos de Documento;
 - Tipos de contato;
 - Finalidades de endereço;
 - Tipos de identificação;
 - Tipos de vínculo entre Pessoas;
-- polos processuais se não forem enum estrutural.
+- polos se não forem enum estrutural.
 
-Financeiro não recebe categorias comerciais inventadas. Escritório configura contas, categorias, centros e formas.
+Financeiro não recebe categorias comerciais inventadas.
 
 ---
 
-# 30. Estratégia de testes
+# 31. Estratégia de testes
 
-A qualidade é obrigatória. A ordem é que deve ser econômica.
+Qualidade é obrigatória, mas a ordem deve ser econômica.
 
 ## Gate A — Fundação
 
-Executar somente:
-
-- migration em banco vazio;
-- import/início da API;
+- migration banco vazio;
+- API inicia;
 - typecheck;
-- build App/Admin;
+- builds App/Admin;
 - login mínimo.
 
 ## Gate B — Núcleo jurídico
 
 Depois de Pessoas + Processos + Atividades:
 
-- criar conta de teste;
+- conta;
 - Pessoa;
 - Processo;
 - Atividade;
 - Agenda;
 - isolamento simples entre duas contas.
 
-Corrigir apenas bloqueios estruturais. Continuar.
-
-## Gate C — Conteúdo externo e arquivos
+## Gate C — Conteúdo
 
 Depois de Publicações + Documentos:
 
-- storage simulado/local compatível;
-- upload/confirmar/download;
+- storage simulado/local;
+- upload/download;
 - geração DOCX;
-- ingestão deduplicada de Publicação com duplo controlado.
+- ingestão deduplicada.
 
 ## Gate D — Financeiro
 
-- Receita;
-- Despesa;
+- Receita/Despesa;
 - baixa;
 - estorno;
 - transferência;
@@ -2874,87 +2513,75 @@ Depois de Publicações + Documentos:
 - Plano;
 - integração;
 - acesso assistido;
-- proteção do último administrador.
+- último Administrador protegido.
 
 ## Gate F — Estabilização final
 
-Somente após o produto inteiro existir:
-
-1. banco totalmente vazio;
+1. banco vazio;
 2. migration;
 3. typecheck;
 4. builds;
 5. testes de integração de alto valor;
 6. stack completa;
 7. dois tenants reais de teste;
-8. isolamento entre tenants;
-9. jornada completa do App;
-10. jornada completa do Admin;
+8. isolamento;
+9. jornada App;
+10. jornada Admin;
 11. responsividade 320/375/768/1440;
 12. teclado/foco;
 13. corrigir todos os defeitos;
-14. repetir somente testes afetados + smoke integral final.
+14. repetir smoke integral.
 
-Não perseguir porcentagem arbitrária de cobertura.
+Não perseguir cobertura percentual arbitrária.
 
 ---
 
-# 31. Testes automatizados mínimos de alto valor
+# 32. Testes automatizados mínimos
 
-## Backend
+Backend:
 
-- login e expiração de sessão;
+- login/expiração;
 - CSRF;
-- isolamento entre tenants;
+- isolamento;
 - permissão negada;
 - conflito de revisão;
-- duplicidade relevante de Pessoa;
+- duplicidade de Pessoa;
 - Processo de outro tenant invisível;
-- transições de Atividade;
-- cálculo de atraso;
+- transições/atraso de Atividade;
 - Publicação deduplicada;
 - upload/cota;
 - exclusão documental pendente;
 - dinheiro decimal;
 - idempotência financeira;
-- expiração do Teste Grátis;
-- proteção do último Administrador da Plataforma.
+- Teste Grátis;
+- último Administrador da Plataforma.
 
-## Frontend E2E
-
-Uma jornada por superfície é suficiente inicialmente.
-
-App:
+Frontend E2E inicial:
 
 ```text
+App:
 cadastro → confirmação → login
 → Área de trabalho
-→ Pessoa
+→ Pessoas
+→ Processos em lista
 → Processo
-→ Atividade/Agenda
+→ Agenda em lista
+→ Atividade
 → Documento
-→ Lançamento
+→ Financeiro
 → Relatório
 → Configurações
-```
 
 Admin:
-
-```text
-login
-→ Dashboard
-→ Escritório
-→ Plano
-→ Integração
-→ acesso assistido
-→ retorno ao Admin
+login → Dashboard → Escritório → Plano → Integração
+→ acesso assistido → retorno ao Admin
 ```
 
 ---
 
-# 32. O que não construir
+# 33. O que não construir
 
-Não adicionar sem nova decisão explícita:
+Sem nova decisão explícita, não adicionar:
 
 - microserviços por módulo;
 - event sourcing;
@@ -2964,13 +2591,16 @@ Não adicionar sem nova decisão explícita:
 - editor DOCX interno;
 - white-label;
 - temas por escritório;
-- preços;
-- cobrança;
-- gateway de pagamento;
-- checkout;
+- preços/cobrança/gateway/checkout;
 - aplicativo mobile nativo;
 - chat interno;
 - CRM paralelo;
+- Kanban;
+- etiquetas;
+- prioridade de tarefa;
+- estrela de Processo importante;
+- listas pessoais de tarefas;
+- privacidade de Processo inspirada em outro produto;
 - segundo cadastro de Agenda;
 - segundo cadastro de Documento;
 - segundo motor Financeiro;
@@ -2978,227 +2608,118 @@ Não adicionar sem nova decisão explícita:
 - fila por tenant;
 - shell remoto arbitrário;
 - Design System próprio;
-- biblioteca de componentes concorrente ao Spectrum 2;
+- biblioteca concorrente ao Spectrum 2;
 - paleta CSS paralela;
 - suíte enorme de testes antes do produto funcionar.
 
-Recurso não descrito neste arquivo não deve ser criado por simetria ou conveniência.
-
 ---
 
-# 33. Definition of Done por fatia
-
-Antes de marcar uma fatia como concluída, confirmar apenas:
+# 34. Definition of Done por fatia
 
 ```text
-[ ] schema/migration existente
-[ ] regra de domínio no servidor
-[ ] tenant e permissão aplicados
-[ ] consultas principais
-[ ] comandos principais
+[ ] schema/migration
+[ ] regra de domínio server-side
+[ ] tenant/permissão
+[ ] consultas
+[ ] comandos
 [ ] erro estruturado
 [ ] cliente frontend
-[ ] listagem/ficha/formulário correspondente
-[ ] estados carregando/vazio/erro/indisponível
-[ ] smoke curto ponta a ponta
+[ ] listagem/ficha/formulário
+[ ] padrão ListView ou TableView escolhido pela semântica
+[ ] carregando/vazio/erro/indisponível
+[ ] smoke ponta a ponta
 ```
-
-Não exigir documentação separada ou bateria completa a cada fatia.
 
 ---
 
-# 34. Checklist final do produto
-
-## Acesso
-
-- [ ] Cadastro por e-mail e senha.
-- [ ] Confirmação de e-mail.
-- [ ] Login.
-- [ ] Recuperação de senha.
-- [ ] Sessão 30 min/8 h.
-- [ ] App/Admin com cookies separados.
-- [ ] CSRF.
-- [ ] Conta Suspensa bloqueada.
-- [ ] Usuário Suspenso bloqueado.
-- [ ] Convite.
-- [ ] Permissões no backend.
+# 35. Checklist visual e funcional final
 
 ## Cabeçalho
 
-- [ ] Nenhum nome de escritório no cabeçalho.
+- [ ] Nome do escritório ausente.
 - [ ] Pesquisa Global centralizada geometricamente.
 - [ ] Pesquisa Administrativa centralizada geometricamente.
-- [ ] Botões do cabeçalho somente ícones.
-- [ ] Cada botão de ícone com `aria-label`.
+- [ ] Botões de header somente ícones.
+- [ ] `aria-label` em cada botão.
 - [ ] Tooltip quando adequado.
-- [ ] Avatar/ícone de conta sem texto ao lado.
 
 ## Spectrum 2
 
-- [ ] App usa somente Spectrum 2.
-- [ ] Admin usa somente Spectrum 2.
-- [ ] Provider configurado.
-- [ ] SideNav Spectrum.
-- [ ] TableView Spectrum onde tabela for adequada.
-- [ ] Dialog/Menu/Form Spectrum.
-- [ ] custom styling somente por tokens/macros.
+- [ ] App/Admin somente Spectrum 2.
+- [ ] Provider.
+- [ ] SideNav.
+- [ ] ListView para coleções operacionais.
+- [ ] TableView somente quando comparação por colunas for útil.
+- [ ] Dialog/Menu/Form oficiais.
+- [ ] styling por tokens/macros.
 - [ ] ícones Spectrum.
-- [ ] nenhuma biblioteca visual concorrente.
-
-## Pessoas
-
-- [ ] CRUD.
-- [ ] contatos.
-- [ ] endereços.
-- [ ] identificações.
-- [ ] vínculos.
-- [ ] principais.
-- [ ] ficha read-first.
-- [ ] Processos relacionados.
-- [ ] Documentos relacionados.
-- [ ] Financeiro relacionado quando autorizado.
 
 ## Processos
 
-- [ ] Judicial.
-- [ ] Administrativo.
-- [ ] partes.
-- [ ] responsáveis.
+- [ ] Listagem principal usa lista, não tabela.
+- [ ] Título por partes/título administrativo é primeira informação.
+- [ ] CNJ/protocolo + natureza + tribunal/órgão em segunda linha.
+- [ ] responsável/monitoramento/atualização em terceira linha.
+- [ ] linha inteira abre ficha.
+- [ ] ações não transformam a linha em grade.
+- [ ] Judicial/Administrativo.
+- [ ] partes/responsáveis.
 - [ ] monitoramento.
 - [ ] buscas processuais.
 - [ ] ficha-hub.
-- [ ] Atividades.
-- [ ] Publicações.
-- [ ] Documentos.
-- [ ] Financeiro.
-- [ ] Histórico.
 
 ## Atividades
 
-- [ ] Audiência.
-- [ ] Prazo.
-- [ ] Tarefa.
-- [ ] Evento.
-- [ ] Pendentes/Concluídas/Canceladas.
+- [ ] Agenda Lista usa ListView, não tabela.
+- [ ] marcador + título + contexto + metadados.
+- [ ] agrupamento por data.
+- [ ] ação rápida e menu secundário.
+- [ ] Lista/Dia/Semana/Mês.
+- [ ] Audiência/Prazo/Tarefa/Evento.
 - [ ] atraso derivado.
-- [ ] Agenda Lista/Dia/Semana/Mês.
-- [ ] arraste + alternativa por comando.
 - [ ] página própria.
 - [ ] reagendar/redesignar.
-- [ ] confirmações das transições críticas.
 
 ## Área de trabalho
 
-- [ ] Minhas atividades em 67% aproximados.
-- [ ] calendário + resumo na coluna lateral.
-- [ ] empilhamento mobile correto.
+- [ ] Usa variante compacta do mesmo item de Atividade.
+- [ ] Minhas atividades primeiro.
 - [ ] Hoje/Esta semana/Este mês.
 - [ ] Sem data.
-- [ ] filtro por dia.
-- [ ] vencidas apenas com data/hora negativa.
-- [ ] ação rápida única Concluir.
-- [ ] calendário compacto sem conteúdo textual por dia.
-- [ ] resumo com quatro linhas exatas.
+- [ ] filtro por calendário.
+- [ ] vencidas só com data/hora negativa.
+- [ ] única ação rápida Concluir.
+- [ ] resumo de quatro linhas.
 
-## Publicações
+## Demais módulos
 
-- [ ] ingestão externa.
-- [ ] deduplicação.
-- [ ] Nova/Tratada.
-- [ ] conteúdo seguro.
-- [ ] providência.
-- [ ] Concluir.
-- [ ] Concluir e abrir a próxima.
-- [ ] Descartar.
-- [ ] sequência preserva recorte.
+- [ ] Pessoas e Documentos preferem listas quando houver hierarquia natural.
+- [ ] Publicações usam lista operacional.
+- [ ] Pesquisa e Notificações usam listas agrupadas.
+- [ ] Financeiro/Relatórios/Admin mantêm tabelas quando comparação tabular é a tarefa real.
 
-## Documentos
+## Domínio e segurança
 
-- [ ] reserva/upload/confirmação.
-- [ ] Biblioteca.
-- [ ] vínculos.
-- [ ] download autenticado.
-- [ ] prévia.
-- [ ] substituir arquivo.
-- [ ] exclusão retomável.
-- [ ] Modelos DOCX.
-- [ ] variáveis.
-- [ ] geração por Pessoa.
-- [ ] geração por Processo.
-
-## Financeiro
-
-- [ ] Receita/Despesa.
-- [ ] parcelas.
-- [ ] baixa.
-- [ ] estorno.
-- [ ] cancelamento/reabertura.
-- [ ] transferência.
-- [ ] saldos.
-- [ ] Movimentações.
-- [ ] Fluxo.
-- [ ] Conciliação.
-- [ ] Configurações.
-- [ ] decimal exato.
-- [ ] idempotência.
-
-## Relatórios
-
-- [ ] catálogo.
-- [ ] definição tipada.
-- [ ] filtros.
-- [ ] colunas.
-- [ ] ordenação.
-- [ ] agrupamento.
-- [ ] paginação por referência.
-- [ ] totais.
-- [ ] PDF.
-- [ ] XLSX.
-
-## Admin
-
-- [ ] casca única.
-- [ ] Dashboard.
-- [ ] Escritórios.
-- [ ] ficha de Escritório.
-- [ ] Usuários globais.
-- [ ] Planos.
-- [ ] Administradores.
-- [ ] Permissões.
-- [ ] Catálogos.
-- [ ] Variáveis.
-- [ ] Integrações.
-- [ ] Operação.
-- [ ] Auditoria.
-- [ ] acesso assistido.
-
-## Integrações
-
-- [ ] E-mail configurável/testável.
-- [ ] Armazenamento configurável/testável.
-- [ ] Comunica CNJ configurável/testável.
-- [ ] ausência de configuração não quebra o núcleo.
+- [ ] Pessoas, Processos, Atividades, Publicações, Documentos, Financeiro, Relatórios e Admin funcionam.
+- [ ] isolamento multi-tenant.
+- [ ] permissões server-side.
+- [ ] revisão otimista.
+- [ ] histórico.
+- [ ] dinheiro decimal.
+- [ ] integrações ausentes não quebram núcleo.
 
 ## Deploy
 
-- [ ] comando único documentado.
-- [ ] PostgreSQL.
+- [ ] Docker Compose.
 - [ ] migration controlada.
-- [ ] API.
-- [ ] worker.
-- [ ] ops.
-- [ ] Nginx.
 - [ ] HTTPS.
-- [ ] App.
-- [ ] Admin.
+- [ ] dois hosts.
 - [ ] health/readiness.
 - [ ] logs sem segredos.
 
 ---
 
-# 35. Ordem de commits sugerida
-
-Manter poucos commits grandes:
+# 36. Commits sugeridos
 
 ```text
 1. foundation: runtime, database, auth and Spectrum shell
@@ -3211,10 +2732,8 @@ Manter poucos commits grandes:
 8. stabilize: final fixes and smoke
 ```
 
-O nome do commit pode variar. O importante é evitar centenas de commits cerimoniais.
-
 ---
 
-# 36. Instrução final para o agente implementador
+# 37. Instrução final para o agente implementador
 
-> Construa o Orvya completo neste repositório seguindo este `ORVYA.md` como especificação única. Implemente por fatias verticais, na ordem de dependência indicada, sempre conectando banco, regra, API e interface antes de avançar. Use Adobe Spectrum 2 exclusivamente no App e no Admin. O cabeçalho do App não mostra o nome do escritório; a Pesquisa Global deve ficar centralizada geometricamente e os botões do cabeçalho devem ser somente ícones com nomes acessíveis. Preserve os contratos canônicos do Orvya em português, o isolamento multi-tenant, as permissões server-side, revisões concorrentes, histórico e precisão financeira. Faça apenas verificações curtas nos grandes marcos e deixe a bateria completa para a estabilização final. Não replique complexidade histórica que não esteja descrita aqui. Termine somente quando a instalação limpa estiver funcional, segura, responsiva, reproduzível e com os smoke tests finais aprovados.
+> Construa o Orvya completo neste repositório seguindo este `ORVYA.md` como especificação única. Implemente por fatias verticais, sempre conectando banco, regra, API e interface antes de avançar. Use Adobe Spectrum 2 exclusivamente. No App, trate Processos e Atividades como coleções operacionais em `ListView`, com título, contexto e metadados em linhas de leitura, não como tabelas de várias colunas. Prefira o mesmo princípio nas demais entidades operacionais quando houver hierarquia natural e reserve `TableView` para Financeiro, Relatórios e Administração quando a comparação entre colunas for a tarefa real. O cabeçalho não mostra o nome do escritório, mantém a pesquisa geometricamente centralizada e usa somente botões de ícone com nomes acessíveis. Preserve isolamento multi-tenant, permissões server-side, contratos canônicos em português, revisão concorrente, histórico e precisão financeira. Faça verificações curtas nos grandes marcos e deixe a bateria completa para a estabilização final. Termine somente quando a instalação limpa estiver funcional, segura, responsiva e reproduzível.
