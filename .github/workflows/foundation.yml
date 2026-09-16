@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   backend:
@@ -70,14 +70,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - name: Install frontend dependencies
         working-directory: frontend
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm ci
       - name: Typecheck
         working-directory: frontend
         run: npm run typecheck
@@ -88,15 +85,3 @@ jobs:
         run: |
           test -f frontend/apps/app/dist/index.html
           test -f frontend/apps/admin/dist/index.html
-      - name: Persist initial lockfile
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
-        working-directory: frontend
-        run: |
-          if git ls-files --error-unmatch package-lock.json >/dev/null 2>&1; then
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add package-lock.json
-          git commit -m 'build: lock frontend dependencies'
-          git push
