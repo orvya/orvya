@@ -84,6 +84,10 @@ jobs:
       - name: Build App and Admin
         working-directory: frontend
         run: npm run build
+      - name: Verify build artifacts
+        run: |
+          test -f frontend/apps/app/dist/index.html
+          test -f frontend/apps/admin/dist/index.html
       - name: Persist initial lockfile
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
         working-directory: frontend
