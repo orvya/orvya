@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: orvya
+      POSTGRES_USER: orvya
+      POSTGRES_PASSWORD: orvya-development-only
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orvya -d orvya"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://orvya:orvya-development-only@postgres:5432/orvya}
+      APP_BASE_URL: ${APP_BASE_URL:-https://app.orvya.net}
+      ADMIN_BASE_URL: ${ADMIN_BASE_URL:-https://admin.orvya.net}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      CNJ_BASE_URL: ${CNJ_BASE_URL:-}
+      CNJ_TOKEN: ${CNJ_TOKEN:-}
+      OPS_TOKEN: ${OPS_TOKEN:-}
+    command: ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/saude', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://orvya:orvya-development-only@postgres:5432/orvya}
+      APP_BASE_URL: ${APP_BASE_URL:-https://app.orvya.net}
+      ADMIN_BASE_URL: ${ADMIN_BASE_URL:-https://admin.orvya.net}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_REGION: ${S3_REGION:-}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
+      CNJ_BASE_URL: ${CNJ_BASE_URL:-}
+      CNJ_TOKEN: ${CNJ_TOKEN:-}
+      OPS_TOKEN: ${OPS_TOKEN:-}
+    command: ["python", "-m", "app.worker.main"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  ops:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://orvya:orvya-development-only@postgres:5432/orvya}
+      APP_BASE_URL: ${APP_BASE_URL:-https://app.orvya.net}
+      ADMIN_BASE_URL: ${ADMIN_BASE_URL:-https://admin.orvya.net}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-}
+      OPS_TOKEN: ${OPS_TOKEN:-}
+    command: ["uvicorn", "app.operations.main:app", "--host", "0.0.0.0", "--port", "8010"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

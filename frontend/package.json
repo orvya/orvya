@@ -1,0 +1,20 @@
+{
+  "name": "orvya-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "shared"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @orvya/app && npm run build --workspace @orvya/admin",
+    "typecheck": "npm run typecheck --workspace @orvya/shared && npm run typecheck --workspace @orvya/app && npm run typecheck --workspace @orvya/admin"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.0"
+  }
+}
