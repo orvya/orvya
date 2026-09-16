@@ -38,7 +38,7 @@ O núcleo conecta:
 - Configurações do escritório;
 - Administração da Plataforma.
 
-## 1.1 Decisões já consolidadas para esta reconstrução
+## 1.1 Decisões consolidadas desta reconstrução
 
 Estas decisões são definitivas para o novo Orvya:
 
@@ -51,7 +51,9 @@ Estas decisões são definitivas para o novo Orvya:
 - a Pesquisa Global fica geometricamente centralizada no cabeçalho;
 - botões do cabeçalho são somente ícones;
 - Processos e Atividades usam **listas operacionais**, não tabelas administrativas;
-- a mesma linguagem de lista deve ser preferida nas demais áreas operacionais quando a informação tiver hierarquia natural em vez de comparação por colunas.
+- a mesma linguagem de lista deve ser preferida nas demais áreas operacionais quando a informação tiver hierarquia natural em vez de comparação por colunas;
+- toda listagem paginada exibe a paginação **na faixa superior**, junto de pesquisa e filtros, e não repete a paginação no rodapé;
+- a Área de trabalho é a exceção explícita: mostra um recorte limitado e não usa paginação.
 
 ## 1.2 Critério de conclusão
 
@@ -343,7 +345,7 @@ Cor nunca é o único indicador de significado.
 
 Esta seção é normativa para o App.
 
-A organização visual foi revista tomando como referência o modelo mental observado na documentação do Astrea para Processos/Casos e tarefas/Agenda: informação principal em destaque, contexto logo abaixo, filtros no topo, linha clicável e ações discretas. **Não copiar recursos do Astrea que não existam no Orvya.**
+A organização visual toma como referência o modelo mental observado nas listas de Processos/Casos e tarefas/Agenda do Astrea: informação principal em destaque, contexto logo abaixo, filtros no topo, item clicável e ações discretas. **Não copiar recursos do Astrea que não existam no Orvya.**
 
 Não introduzir por essa referência:
 
@@ -360,7 +362,7 @@ A referência é de **composição e densidade**, não de feature parity.
 
 ## 6.1 Lista operacional x tabela
 
-Use **`ListView` / lista de leitura** quando cada item for um objeto que a pessoa reconhece por título + contexto.
+Use **`ListView` / lista de leitura** quando cada item for um objeto reconhecido por título + contexto.
 
 Use **`TableView`** quando o objetivo principal for comparar valores entre colunas.
 
@@ -392,7 +394,7 @@ Tabela continua adequada para:
 
 ## 6.2 Anatomia de um item operacional
 
-Um item deve possuir no máximo três níveis de leitura:
+Um item deve possuir no máximo três níveis principais de leitura:
 
 ```text
 [Título / identificação principal]                         [estado/ação]
@@ -408,25 +410,25 @@ Regras:
 - altura natural;
 - separador discreto entre itens ou tratamento visual nativo do `ListView`;
 - item inteiro navegável;
-- ação interativa interna não dispara a navegação;
+- ação interativa interna não dispara navegação;
 - foco e seleção seguem Spectrum;
-- estado de hover é discreto;
+- estado de hover discreto;
 - nenhuma sombra pesada por item;
-- não criar um Card visual independente para cada linha de uma lista longa.
+- não criar um Card independente para cada linha de lista longa.
 
-`Card` fica para objetos isolados, resumo ou composição em que o próprio Spectrum recomende.
+`Card` fica para objetos isolados ou resumos independentes.
 
 ## 6.3 Ações e seleção
 
-Ações recorrentes e inequívocas podem aparecer como ícone.
+Ação recorrente e inequívoca pode aparecer como ícone.
 
 Ações secundárias ficam em `ActionMenu`.
 
-Seleção múltipla só aparece se a tela possuir uma ação coletiva real.
+Seleção múltipla só aparece se houver ação coletiva real.
 
 Não adicionar checkbox apenas por semelhança com outro produto.
 
-Quando seleção múltipla existir, usar suporte de seleção do `ListView`/Spectrum e uma barra de ações apropriada.
+Quando seleção múltipla existir, usar seleção do `ListView`/Spectrum e uma barra de ações própria.
 
 ## 6.4 Responsividade
 
@@ -439,19 +441,67 @@ metadado
 metadado
 ```
 
-Os metadados podem quebrar linha. Não virar tabela rolável para preservar colunas inexistentes.
+Metadados podem quebrar linha. Não transformar uma lista em tabela rolável apenas para preservar pseudo-colunas.
 
-## 6.5 Ferramentas da lista
+## 6.5 Ferramentas e paginação superior
 
-Acima da lista:
+Toda coleção paginada apresenta **uma única faixa de ferramentas antes do primeiro item**.
+
+Desktop:
 
 ```text
-[Pesquisa........................] [filtro principal] [Mais filtros] [paginação]
+[Pesquisa...................] [Filtro] [Mais filtros]       1 a 25 de N  [25 ▾] [‹] [›]
 ```
 
-Filtros principais podem ficar visíveis. Filtros secundários ficam em `Mais filtros`.
+Regras obrigatórias:
 
-Filtros ativos devem ser perceptíveis e removíveis sem abrir novamente o formulário quando o Spectrum oferecer padrão apropriado.
+- pesquisa e filtros à esquerda;
+- paginação à direita na mesma faixa quando houver largura;
+- **não repetir paginação no rodapé**;
+- ordem da paginação: faixa → tamanho → anterior → próxima;
+- forma visual: `1 a 25 de N  [25 ▾] [‹] [›]`;
+- tamanhos permitidos: 25, 50 e 100;
+- padrão: 25;
+- nome visual `Itens por página` não é necessário, mas o controle mantém nome acessível;
+- alterar termo ou filtro volta à página 1 e mantém o tamanho escolhido;
+- `Limpar filtros` volta aos filtros padrão e à página 1, preservando tamanho;
+- `0 a 0 de 0` aparece somente depois de zero confirmado pelo servidor;
+- durante carga inicial, erro, indisponibilidade ou recusa, não inventar total;
+- durante releitura, manter o último total confirmado e marcar atualização, desabilitando setas até a nova resposta quando necessário;
+- se o total reduzir e a página atual deixar de existir, corrigir uma vez para a última página válida;
+- não exibir faixa invertida ou total presumido;
+- paginação é server-side, nunca carregamento integral seguido de corte no navegador.
+
+Em largura estreita, a faixa quebra nesta ordem:
+
+```text
+Pesquisa
+Filtros
+Paginação
+Lista
+```
+
+Sem reduzir fonte ou alvo de toque.
+
+### Exceções
+
+- Área de trabalho: não pagina; mostra até 12 Atividades e `+ N atividades`/`Ver todas na Agenda`.
+- Agenda Dia/Semana/Mês: não usam paginação de lista; navegam por período.
+- componentes pequenos de ficha com poucos itens podem usar limite curto e link `Ver todos`, quando definido no próprio módulo.
+
+## 6.6 Filtros
+
+Filtros principais ficam visíveis; secundários ficam em `Mais filtros`.
+
+Não usar título externo redundante acima de filtros da barra. O próprio controle e o nome acessível indicam rótulo e seleção, por exemplo:
+
+```text
+Natureza: todas
+Monitoramento: monitorados
+Recorte: pendentes
+```
+
+Filtros ativos devem ser perceptíveis e removíveis pelo padrão Spectrum apropriado.
 
 ---
 
@@ -480,7 +530,7 @@ CNJ_TOKEN=
 OPS_TOKEN=
 ```
 
-A aplicação deve iniciar sem integrações externas configuradas, exceto quando a operação solicitada depender delas.
+A aplicação inicia sem integrações externas configuradas, exceto quando a operação solicitada depende delas.
 
 ---
 
@@ -490,8 +540,8 @@ A aplicação deve iniciar sem integrações externas configuradas, exceto quand
 
 Sessão opaca controlada pelo servidor:
 
-- segredo aleatório criptográfico com pelo menos 256 bits;
-- somente derivação é persistida;
+- segredo aleatório de pelo menos 256 bits;
+- somente derivação do segredo persistida;
 - cookie `HttpOnly`;
 - `Secure` em produção;
 - host-only;
@@ -514,9 +564,9 @@ Mutações autenticadas exigem:
 X-Orvya-CSRF
 ```
 
-Token somente na memória da aplicação.
+O token fica apenas na memória da aplicação.
 
-Não usar `localStorage`, `sessionStorage` ou IndexedDB para sessão/credenciais.
+Não usar `localStorage`, `sessionStorage` ou IndexedDB para sessão ou credenciais.
 
 ## 8.3 Correlação
 
@@ -526,16 +576,18 @@ Toda resposta da API possui:
 X-Orvya-Operation-Id
 ```
 
-## 8.4 Senhas
+## 8.4 Senhas e tokens
 
 - Argon2id;
 - nunca logar senha ou token;
-- recuperação por token de uso único;
-- pedido de recuperação não revela se e-mail existe.
+- confirmação, convite e recuperação usam token de uso único com expiração;
+- pedido de recuperação não revela se o e-mail existe.
 
 ## 8.5 Autoridade central
 
-Uma única camada de autorização decide, a cada requisição:
+Existe uma única função/serviço de autorização no servidor.
+
+Cada requisição protegida reavalia:
 
 - identidade;
 - tenant;
@@ -547,35 +599,35 @@ Uma única camada de autorização decide, a cada requisição:
 - limite aplicável;
 - alcance do objeto.
 
-Frontend apenas projeta capacidades. Segurança real é do servidor.
+Frontend adapta a apresentação; não é fonte de autoridade.
 
 ## 8.6 Multi-tenant
 
 - tenant vem da sessão;
-- App não aceita `account_id` do cliente como autoridade;
-- toda consulta aplica tenant;
-- relação entre tenants é recusada;
-- ID de outro escritório não vaza existência;
+- App não aceita `account_id` do cliente como fonte de autoridade;
+- toda consulta aplica tenant no servidor;
+- relações entre tenants são recusadas;
+- registro de outra conta não revela existência;
 - Pesquisa, Relatórios, arquivos e histórico obedecem à mesma fronteira.
 
 ## 8.7 Acesso assistido
 
-`Acessar escritório` no Admin cria contexto temporário próprio no host do App.
+`Acessar escritório` no Admin cria sessão própria no host do App.
 
 - não cria usuário local;
 - não consome vaga;
-- autoria é do Administrador da Plataforma;
-- interface mostra faixa clara de acesso assistido;
-- há ação para retornar ao Admin;
-- ações entram no histórico com ator real.
+- ator continua sendo Administrador da Plataforma;
+- faixa persistente identifica o acesso assistido e o escritório;
+- ação visível retorna ao Admin;
+- ações ficam auditadas com ator real.
 
 ---
 
 # 9. Contrato HTTP canônico
 
-REST JSON sob `/api/v1`.
+Use REST JSON sob `/api/v1`.
 
-Nomes funcionais das famílias de rotas permanecem em português quando já são canônicos no Orvya.
+Nomes funcionais de famílias permanecem em português quando já canônicos.
 
 ## 9.1 Coleções
 
@@ -587,7 +639,7 @@ sort
 direction
 page
 page_size
-+ filtros tipados do domínio
++ filtros tipados
 ```
 
 Regras:
@@ -596,8 +648,8 @@ Regras:
 - `page_size`: 25, 50 ou 100;
 - padrão 25;
 - `q` até 200 caracteres;
-- ordenação estável com desempate por ID;
-- valor inválido é erro de campo.
+- ordenação estável, desempate por ID;
+- filtro inválido é erro de campo.
 
 Envelope:
 
@@ -611,7 +663,7 @@ Envelope:
 }
 ```
 
-## 9.2 Erros
+## 9.2 Erro
 
 ```json
 {
@@ -632,8 +684,8 @@ Status principais:
 - `400` entrada inválida;
 - `401` sem sessão;
 - `403` sem autoridade;
-- `404` ausente ou fora do alcance;
-- `409` conflito de revisão;
+- `404` ausente ou fora de alcance;
+- `409` conflito;
 - `422` regra de domínio;
 - `429` limite técnico;
 - `503` dependência necessária indisponível.
@@ -642,25 +694,25 @@ Status principais:
 
 Registros editáveis importantes possuem `revision`.
 
-Mutação envia `expected_revision`.
+Mutação recebe `expected_revision`.
 
-Conflito retorna `409`; frontend oferece recarregar/revisar e nunca sobrescreve silenciosamente.
+Mudança concorrente responde `409`; frontend oferece recarregar e revisar, nunca sobrescrever silenciosamente.
 
 ## 9.4 Idempotência
 
-Comandos capazes de duplicar efeito por repetição de rede usam chave de operação reaproveitada na mesma tentativa deliberada.
+Operações que possam duplicar efeito por repetição recebem chave de operação reutilizada ao repetir a mesma tentativa deliberada.
 
-Aplicar especialmente ao Financeiro e efeitos externos.
+Obrigatória especialmente para efeitos financeiros e externos.
 
 ## 9.5 Dinheiro
 
-Dinheiro viaja como string decimal.
+Dinheiro trafega como string decimal:
 
 ```json
 {"principal":"1250.00","open":"500.00"}
 ```
 
-Nunca `float`.
+Nunca usar `float` para valor monetário.
 
 ## 9.6 Famílias de rotas
 
@@ -689,18 +741,17 @@ Nunca `float`.
 /api/v1/saude/dependencias
 ```
 
-Não criar endpoint para cada pequena composição visual.
+Não criar endpoint especializado para cada pequeno detalhe visual quando filtro/projeção resolve de forma coerente.
 
 ---
 
 # 10. Modelo de dados mínimo
 
-UUID como identificador, timestamps timezone-aware para instantes e `DATE` para datas civis.
+UUID como chave principal; timestamps timezone-aware para instantes; `DATE` para datas civis.
 
 ## 10.1 Globais
 
-- Planos;
-- recursos e limites de Plano;
+- Planos, recursos e limites;
 - Administradores da Plataforma;
 - catálogos iniciais;
 - catálogos referenciais;
@@ -716,16 +767,15 @@ UUID como identificador, timestamps timezone-aware para instantes e `DATE` para 
 - permissões;
 - convites;
 - sessões;
-- tokens de confirmação/recuperação;
+- tokens;
 - Pessoas, contatos, endereços, identificações e vínculos;
-- Processos, partes, responsáveis e monitoramento;
-- buscas processuais;
-- Atividades e catálogos de Atividade;
+- Processos, partes, responsáveis, monitoramento e buscas;
+- Atividades e catálogos;
 - Publicações;
 - arquivos;
 - Documentos, vínculos documentais e Modelos;
 - contas financeiras, categorias, centros, formas;
-- Lançamentos, baixas, transferências, conciliações;
+- Lançamentos, baixas, transferências e conciliações;
 - Notificações e preferências;
 - catálogos da conta;
 - fatos de histórico;
@@ -733,13 +783,13 @@ UUID como identificador, timestamps timezone-aware para instantes e `DATE` para 
 
 ## 10.3 Regras transversais
 
-- dado tenant-scoped possui `account_id` direto ou relação inequívoca;
+- todo dado tenant-scoped possui `account_id` direto ou relação inequívoca;
 - dinheiro usa `NUMERIC`;
-- histórico append-only;
-- data civil não vira meia-noite artificial UTC;
-- `Não informado` não é persistido;
+- histórico é append-only;
+- datas civis não viram meia-noite artificial em UTC;
+- `Não informado` é apresentação, não dado persistido;
 - relação não duplica entidade;
-- excluir relação não exclui automaticamente registro relacionado.
+- excluir relação não exclui automaticamente o registro relacionado.
 
 ---
 
@@ -811,7 +861,24 @@ Não usar drawer lateral para ficha ou formulário.
 - formulários controlam a própria largura;
 - 320 px não produz overflow da página inteira.
 
-## 12.3 Blocos de dados
+## 12.3 Cabeçalho da página
+
+Estrutura preferencial:
+
+```text
+[retorno opcional] Título                          [ação primária] [⋯]
+contexto curto quando necessário
+[abas, quando existirem]
+```
+
+Regras:
+
+- uma ação primária por página quando possível;
+- ações secundárias no `ActionMenu`;
+- destrutivas separadas e identificadas;
+- não repetir em texto permanente o que título, botão ou rótulo já explica.
+
+## 12.4 Blocos de dados
 
 Não criar Card por campo.
 
@@ -825,29 +892,54 @@ Bloco
     ...
 ```
 
-## 12.4 Consultas e filtros
+## 12.5 Consultas
 
 - pesquisa interna automática após 300 ms;
 - Enter antecipa;
-- resposta antiga não substitui nova;
+- composição de caracteres não dispara consulta intermediária;
+- resposta obsoleta não substitui resposta nova;
 - mudar filtro/termo volta à página 1;
 - `Limpar filtros` restaura padrão e mantém tamanho;
-- `0 a 0 de 0` somente com zero confirmado;
+- paginação obedece integralmente à seção 6.5;
 - durante atualização manter conteúdo anterior inerte quando seguro.
 
-## 12.5 Seleção assistida
+Padrões de filtros:
+
+| Tela | Padrão |
+|---|---|
+| Agenda | Modalidade: todas · Recorte: Pendentes |
+| Pessoas | Natureza: todas |
+| Processos | Natureza: todas |
+| Publicações | Condição: todas |
+| Documentos | Tipo: todos |
+| Lançamentos | Natureza: todas · Situação: todas |
+| Conciliação | Situação: todas · Conta: todas |
+| Usuários do escritório | Status: todos · Acesso: todos |
+| Admin Escritórios | Status: todas · Teste Grátis: todas |
+| Admin Usuários | Status: todos |
+
+## 12.6 Seleção assistida
 
 Relações extensas usam `ComboBox` remoto:
 
-- 2 caracteres;
+- mínimo 2 caracteres;
 - 300 ms;
 - até aproximadamente 10 sugestões;
 - identificação + contexto;
-- nunca carregar milhares de itens no browser.
+- não carregar milhares de opções no browser.
 
-## 12.6 Ações críticas
+## 12.7 Dialogs e rascunhos
 
-Dialog de confirmação:
+- criação e edição usam formulário compartilhado;
+- erro da API permanece no Dialog;
+- recusa não fecha o Dialog;
+- fechar formulário modificado pede descarte quando necessário;
+- cancelar não cria nem altera registro;
+- foco retorna ao acionador ao fechar.
+
+## 12.8 Ações críticas
+
+Confirmação:
 
 ```text
 Título
@@ -892,11 +984,11 @@ centro   = largura controlada da pesquisa
 direita  = 1fr
 ```
 
-Pesquisa Global fica geometricamente centralizada independentemente dos lados.
+A Pesquisa Global permanece geometricamente centralizada independentemente dos lados.
 
 ## 13.1 Botões do cabeçalho
 
-Todos os botões são somente ícones:
+Todos são somente ícones:
 
 - Menu no mobile;
 - `+` global;
@@ -918,16 +1010,54 @@ Cada ação precisa de:
 `SearchField` Spectrum:
 
 - mínimo 2 caracteres;
+- máximo 200;
 - 300 ms;
 - até 5 resultados por grupo na visão rápida;
+- grupos sem permissão não aparecem;
 - setas navegam;
 - Enter abre;
-- Esc fecha resultados;
-- `Ver todos os resultados` abre `/pesquisa`.
+- Esc fecha e devolve foco ao campo;
+- `Ver todos os resultados` abre `/pesquisa` com o termo.
 
-Em tela estreita pode ocupar uma segunda linha do cabeçalho, mantendo-se na própria casca.
+Em largura estreita pode ocupar segunda linha do cabeçalho, mantendo-se na própria casca.
 
-## 13.3 Conta
+## 13.3 Inclusão rápida `+`
+
+O ícone `+` abre Menu com, conforme permissão e Plano:
+
+- Nova atividade;
+- Novo processo;
+- Nova Pessoa;
+- Novo Documento;
+- Novo lançamento.
+
+Regras:
+
+- mostrar somente opções realmente permitidas;
+- sem opções, ocultar o `+`;
+- cada opção abre **o mesmo Dialog do módulo de origem**;
+- não duplicar formulário;
+- criação pelo `+` global não inventa vínculo contextual;
+- dentro de ficha, preferir o `+` contextual quando ele puder herdar o registro.
+
+## 13.4 Notificações no sino
+
+O sino mostra contador de não lidas e abre painel transitório com:
+
+- até 10 ocorrências válidas mais recentes;
+- filtros `Todas`, `Não lidas`, `Lidas`;
+- ação `Marcar todas como lidas`;
+- link `Ver notificações` para `/alertas`.
+
+Regras:
+
+- abrir item abre a origem e marca somente aquela leitura quando aplicável;
+- `Marcar todas como lidas` pede confirmação curta, sem justificativa;
+- marcar leitura não conclui, trata ou cancela a origem;
+- acesso assistido não marca Notificações em nome do usuário;
+- Esc fecha painel e devolve foco ao sino.
+
+## 13.5 Conta
 
 Menu do Avatar:
 
@@ -937,7 +1067,7 @@ Configurações do escritório
 Sair
 ```
 
-O nome do escritório permanece disponível apenas onde for conteúdo real, como Configurações ou acesso assistido.
+O nome do escritório aparece apenas onde for conteúdo real, como Configurações ou faixa de acesso assistido.
 
 ---
 
@@ -985,7 +1115,8 @@ Mobile:
 - SideNav sobreposto;
 - botão Menu somente ícone;
 - Esc/cortina fecham;
-- foco retorna ao acionador.
+- foco retorna ao acionador;
+- conteúdo usa largura inteira quando fechada.
 
 ## 14.1 Rotas canônicas
 
@@ -1022,7 +1153,11 @@ Mobile:
 /conta/configuracoes/acoes-criticas
 ```
 
-Ao abrir ficha preservar termo, filtros, página, tamanho, ordenação, visão, data e posição aproximada de rolagem.
+`/` do App redireciona para `/dashboard` após autenticação.
+
+Ao abrir ficha, preservar termo, filtros, página, tamanho, ordenação, visão, data e posição aproximada de rolagem.
+
+Voltar retorna ao contexto anterior.
 
 ---
 
@@ -1120,7 +1255,7 @@ Não criar cargos fixos como fonte de autoridade.
 
 ## 16.4 Cadastro
 
-Rota visível `/cadastro`.
+Rota `/cadastro`.
 
 Campos:
 
@@ -1135,10 +1270,15 @@ Fluxo:
 2. criar usuário inicial;
 3. marcar Administrador do Sistema;
 4. associar Teste Grátis;
-5. enviar confirmação de e-mail;
-6. confirmar antes do acesso operacional.
+5. emitir confirmação;
+6. enviar confirmação por e-mail;
+7. confirmar antes do acesso operacional.
 
-## 16.5 Login
+Como não existe identidade externa alternativa, o autocadastro público depende do serviço de e-mail para completar a confirmação. Se SMTP estiver indisponível, informar que o cadastro está temporariamente indisponível em vez de criar um fluxo que não pode ser concluído.
+
+Falha de envio após emissão não apaga silenciosamente a conta; o usuário deve poder solicitar reenvio quando o serviço voltar.
+
+## 16.5 Login e recuperação
 
 ```text
 [Logo]
@@ -1151,6 +1291,14 @@ Criar escritório
 ```
 
 Somente e-mail + senha.
+
+Recuperação:
+
+- resposta neutra;
+- token de uso único;
+- expiração;
+- redefinição de senha;
+- token invalidado após uso.
 
 ## 16.6 Convites
 
@@ -1213,9 +1361,15 @@ Read-first; Editar abre Dialog.
 
 ### Equipe e acesso
 
-Aqui **TableView é apropriada**, pois há comparação administrativa de usuários.
+`TableView` é apropriada pela comparação administrativa.
 
-Campos principais:
+Acima da tabela, aplicar paginação superior quando a coleção ultrapassar uma página:
+
+```text
+[Pesquisar] [Status] [Acesso]                 1 a 25 de N  [25 ▾] [‹] [›]
+```
+
+Campos:
 
 ```text
 Usuário | Status | Administrador do Sistema | Convite/acesso
@@ -1239,7 +1393,7 @@ Somente fuso compartilhado e acesso ao catálogo de Atividades.
 - usuário/conta suspensos não entram;
 - sessão expira;
 - permissões server-side funcionam;
-- convite, Perfil e Configurações funcionam.
+- convite, recuperação, Perfil e Configurações funcionam.
 
 ---
 
@@ -1279,11 +1433,11 @@ Tenant sempre da sessão.
 
 ## 17.3 Listagem `/pessoas`
 
-Preferir lista operacional, não tabela, porque a Pessoa é reconhecida por identidade + contatos.
+Lista operacional, não tabela.
 
 ```text
 [Pessoas]                                            [Adicionar pessoa]
-[Pesquisar nome/documento/contato] [Natureza] [paginação]
+[Pesquisar nome/documento/contato] [Natureza]        1 a 25 de N  [25 ▾] [‹] [›]
 
 Joana Silva                                         [Pessoa Física] [⋯]
 CPF 000.000.000-00
@@ -1294,7 +1448,7 @@ CNPJ 00.000.000/0001-00
 financeiro@exemplo.com · atualizada em 14/09/2026
 ```
 
-A linha inteira abre a ficha.
+Linha inteira abre ficha.
 
 ## 17.4 Ficha `/pessoas/:id`
 
@@ -1308,7 +1462,7 @@ Resumo read-first com Identificação, Classificações, Observações, Contatos
 
 Criar/editar coleção abre Dialog.
 
-Relações curtas dentro das abas podem usar listas compactas em vez de mini-tabelas quando houver contexto hierárquico.
+Relações curtas podem usar listas compactas. Relações longas paginadas seguem a regra superior da seção 6.5.
 
 Histórico usa timeline.
 
@@ -1351,17 +1505,7 @@ Cadastro manual não consulta fonte externa para autorizar salvamento.
 
 ## 18.3 Administrativo
 
-Pode possuir:
-
-- título;
-- protocolo;
-- tipo;
-- órgão;
-- início;
-- valor de referência;
-- Situação;
-- responsável principal;
-- envolvidos.
+Pode possuir título, protocolo, tipo, órgão, início, valor de referência, Situação, responsável principal e envolvidos.
 
 ## 18.4 Partes
 
@@ -1372,6 +1516,8 @@ Polos:
 - Terceiro interessado.
 
 Parte aponta para Pessoa da mesma conta.
+
+Título de apresentação por partes usa `Parte 1 x Parte 2`, calculado na leitura para quem puder ler Pessoas. Não persistir esse título derivado.
 
 ## 18.5 Monitoramento
 
@@ -1400,54 +1546,43 @@ Ao concluir:
 - permitir seleção do que adicionar;
 - nunca cadastrar tudo automaticamente.
 
+Histórico de buscas paginado segue a paginação superior.
+
 ## 18.7 Listagem `/processos`
 
-**Usar `ListView`/lista operacional. Não usar `TableView` para a listagem principal de Processos.**
-
-A tela deve lembrar uma lista jurídica de trabalho, não uma grade de banco de dados.
-
-Topo:
+**Usar `ListView`. Não usar `TableView` na listagem principal.**
 
 ```text
 [Processos]                                              [Novo processo]
-[Pesquisar número, partes ou título.................................]
-[Natureza] [Monitoramento] [Situação] [Mais filtros]       [paginação]
-```
+[Pesquisar número, partes ou título....................]
+[Natureza] [Monitoramento] [Situação] [Mais filtros]     1 a 25 de N  [25 ▾] [‹] [›]
 
-Item Judicial:
-
-```text
 Parte 1 x Parte 2                                      [Situação] [⋯]
 0001234-56.2026.8.16.0001 · Judicial · TJPR
 Responsável: Maria Souza · Monitorado · atualizado em 15/09/2026
 ────────────────────────────────────────────────────────────────────
-```
 
-Item Administrativo:
-
-```text
 Título do procedimento                                  [Situação] [⋯]
 Protocolo 12345 · Administrativo · Órgão X
 Responsável: João Silva · atualizado em 14/09/2026
-────────────────────────────────────────────────────────────────────
 ```
 
-Hierarquia obrigatória:
+Hierarquia:
 
-1. **título reconhecível:** `Parte 1 x Parte 2` ou título administrativo;
-2. **identificação jurídica:** CNJ/protocolo + natureza + tribunal/órgão;
-3. **contexto operacional:** responsável + monitoramento + atualização.
+1. título reconhecível;
+2. identificação jurídica;
+3. contexto operacional.
 
 Regras:
 
 - linha inteira abre ficha;
 - `ActionMenu` não abre ficha;
-- Situação pode aparecer como `StatusLight`/Badge discreto;
-- monitoramento é texto ou status discreto, não coluna;
+- Situação pode usar StatusLight/Badge discreto;
+- monitoramento é contexto, não coluna;
 - não usar cabeçalho `Processo | Situação | Responsável | Atualização`;
-- não alinhar cada metadado como se fosse célula;
-- sem nomes de partes se usuário não tiver leitura correspondente;
-- seleção múltipla somente se uma ação coletiva real vier a existir no Orvya.
+- não alinhar metadados como células;
+- não vazar partes sem permissão;
+- seleção múltipla somente com ação coletiva real.
 
 ## 18.8 Ficha `/processos/:id`
 
@@ -1457,12 +1592,14 @@ Regras:
 [Resumo] [Atividades] [Publicações] [Documentos] [Financeiro] [Histórico]
 ```
 
-`+` contextual reutiliza os mesmos Dialogs:
+`+` contextual:
 
 - Nova atividade;
 - Vincular Pessoa;
 - Adicionar Documento;
 - Novo lançamento.
+
+Cada opção reutiliza Dialog do módulo de origem e herda o Processo.
 
 Menu:
 
@@ -1483,11 +1620,9 @@ PARTES E RESPONSÁVEIS
   timeline curta
 ```
 
-Em largura estreita empilhar.
+A aba Atividades reutiliza a lista da Agenda filtrada pelo Processo e, quando paginada, mantém controles no topo.
 
-A aba Atividades usa o mesmo padrão visual de lista de Atividades da Agenda, já filtrado pelo Processo.
-
-Financeiro do Processo é somente resumo do Processo, sem segundo motor financeiro.
+Financeiro do Processo é resumo, não segundo motor.
 
 ### Pronto quando
 
@@ -1497,6 +1632,7 @@ Financeiro do Processo é somente resumo do Processo, sem segundo motor financei
 - monitoramento;
 - buscas externas separadas do cadastro manual;
 - lista principal sem grade tabular;
+- paginação superior;
 - ficha agrega relações sem duplicar dados.
 
 ---
@@ -1518,9 +1654,7 @@ Estados persistidos:
 - Concluída;
 - Cancelada.
 
-`Atrasada` é condição derivada.
-
-Pendentes inclui atrasadas.
+`Atrasada` é condição derivada. Pendentes inclui atrasadas.
 
 Campos principais:
 
@@ -1542,33 +1676,20 @@ Origem:
 - Processo;
 - tratamento de Publicação.
 
-Criada no Processo herda Processo.
-
-Criada de Publicação herda obrigatoriamente o Processo da Publicação.
+Criada no Processo herda Processo. Criada de Publicação herda obrigatoriamente o Processo da Publicação.
 
 ## 19.2 API
 
 Família `/api/v1/atividades`.
 
-Servidor calcula:
-
-- atraso;
-- marco de atraso;
-- contagens;
-- janela de calendário;
-- cor do tipo;
-- transições válidas.
+Servidor calcula atraso, marco, contagens, janela do calendário, cor do tipo e transições válidas.
 
 ## 19.3 Agenda `/agenda`
-
-Topo:
 
 ```text
 [Agenda e Atividades]                                   [Nova atividade]
 [Lista] [Dia] [Semana] [Mês]
 [‹] período [Hoje] [›]
-[Pesquisar atividade/processo] [Modalidade] [Recorte] [Responsável] [Mais filtros]
-Pendentes N · Atrasadas N · Sem data N · Concluídas N
 ```
 
 Visão inicial: Lista.
@@ -1585,9 +1706,16 @@ Recortes:
 
 ### 19.3.1 Lista
 
-**Usar `ListView`. Não usar tabela de colunas para a Agenda em modo Lista.**
+**Usar `ListView`. Não usar tabela.**
 
-Agrupar por data quando houver data:
+A barra da visão Lista inclui paginação no topo:
+
+```text
+[Pesquisar atividade/processo] [Modalidade] [Recorte] [Responsável] [Mais filtros]   1 a 25 de N  [25 ▾] [‹] [›]
+Pendentes N · Atrasadas N · Sem data N · Concluídas N
+```
+
+Agrupar por data:
 
 ```text
 VENCIDAS
@@ -1602,31 +1730,22 @@ HOJE · 15 DE SETEMBRO
 ● Reunião de alinhamento                                   [Concluir] [⋯]
   Processo 0001234-56.2026.8.16.0001
   Evento · 14:30–15:30 · João Pereira
-────────────────────────────────────────────────────────────────────
-
-● Revisar documentos                                       [Concluir] [⋯]
-  Sem Processo
-  Tarefa · sem horário · Ana Costa
 ```
 
 Anatomia:
 
-1. marcador visual do tipo;
-2. título da Atividade;
+1. marcador do tipo;
+2. título;
 3. Processo/contexto;
 4. modalidade + data/horário + responsável;
 5. ação rápida aplicável;
 6. menu secundário.
 
-Não exibir cabeçalho:
+Não exibir cabeçalho tabular de colunas.
 
-```text
-Atividade | Modalidade | Quando | Responsável | Estado | Ações
-```
+Linha inteira abre ficha.
 
-A linha inteira abre a ficha.
-
-Ações conforme estado/capacidade:
+Ações conforme capacidade/estado:
 
 - concluir/reabrir;
 - reagendar;
@@ -1635,7 +1754,7 @@ Ações conforme estado/capacidade:
 - cancelar;
 - excluir.
 
-A ação mais frequente pode aparecer diretamente; as demais ficam no menu.
+A ação mais frequente pode ficar direta; demais no menu.
 
 ### 19.3.2 Dia
 
@@ -1644,15 +1763,17 @@ A ação mais frequente pode aparecer diretamente; as demais ficam no menu.
 - grade temporal;
 - criação em horário escolhido;
 - arraste para reagendar;
-- comando Reagendar sempre disponível.
+- comando Reagendar como alternativa;
+- sem paginação de lista.
 
 ### 19.3.3 Semana
 
 - sete dias;
 - faixa Sem horário;
-- linha de horário atual;
+- linha do horário atual;
 - colisões em raias;
-- cabeçalho do dia abre Dia.
+- cabeçalho do dia abre Dia;
+- sem paginação de lista.
 
 ### 19.3.4 Mês
 
@@ -1660,7 +1781,8 @@ A ação mais frequente pode aparecer diretamente; as demais ficam no menu.
 - poucos itens por dia;
 - `+ N` abre Dia;
 - clicar dia abre Dia;
-- sem painel lateral.
+- sem painel lateral;
+- sem paginação de lista.
 
 ## 19.4 Ficha `/agenda/:id`
 
@@ -1683,8 +1805,6 @@ Editar, Reagendar e Redesignar usam Dialog.
 ## 19.5 Área de trabalho `/dashboard`
 
 A Área de trabalho é mesa diária, não painel de KPI.
-
-Desktop:
 
 ```text
 [Área de trabalho]
@@ -1710,7 +1830,7 @@ Largura aproximada 67/33; abaixo de 960 px empilhar com Minhas atividades primei
 
 ### Minhas atividades
 
-Usar o **mesmo componente base de item de Atividade da Agenda**, com variante compacta.
+Reutiliza o item base da Agenda em variante compacta.
 
 - somente Atividades do usuário atual;
 - somente Pendentes;
@@ -1722,22 +1842,20 @@ Usar o **mesmo componente base de item de Atividade da Agenda**, com variante co
 - vencidas primeiro;
 - até 12 itens;
 - excedente `+ N atividades`;
-- sem paginação;
+- **sem paginação**;
 - linha abre Atividade;
 - única ação rápida: Concluir.
 
-Vencida difere **somente** pela data/hora em cor negativa Spectrum.
-
-Não usar selo, fundo ou borda especial para atraso.
+Vencida difere somente pela data/hora em cor negativa Spectrum. Sem selo, fundo ou borda especial.
 
 ### Calendário compacto
 
 - mês;
 - segunda → domingo;
-- cabeçalho apenas `‹ MÊS ANO ›`;
+- cabeçalho `‹ MÊS ANO ›`;
 - sem texto de Atividades dentro dos dias;
 - sem horários/arraste;
-- um dia com Atividade Pendente recebe uma marca discreta;
+- uma marca discreta por dia com ao menos uma Atividade Pendente do usuário;
 - quantidade não muda a marca;
 - trocar mês não muda lista;
 - clicar dia filtra lista.
@@ -1758,7 +1876,7 @@ Quatro linhas de texto, sem cards individuais, gráficos, ícones decorativos ou
 - CRUD/transições;
 - atraso calculado;
 - Lista/Dia/Semana/Mês;
-- Lista é realmente uma lista, não tabela;
+- paginação superior da Lista;
 - retorno de calendário preserva contexto;
 - Área de trabalho segue mesa diária.
 
@@ -1775,11 +1893,9 @@ Condições:
 - Nova;
 - Tratada.
 
-`Tratada` é operacional e não declara efeito jurídico.
+`Tratada` é operacional, não declara efeito jurídico.
 
-Conteúdo ausente e falha são estados diferentes.
-
-Conteúdo é apresentado como texto seguro.
+Conteúdo ausente e falha são estados diferentes. Conteúdo é apresentado como texto seguro.
 
 Ações:
 
@@ -1788,20 +1904,16 @@ Ações:
 - Concluir e abrir a próxima;
 - Descartar.
 
-Criar providência cria Atividade real.
-
-Concluir preserva a Publicação.
-
-Descartar remove a Publicação sem apagar Atividades independentes.
+Criar providência cria Atividade real. Concluir preserva Publicação. Descartar não apaga Atividades independentes.
 
 ### Listagem `/publicacoes`
 
-Preferir lista operacional:
+Lista operacional:
 
 ```text
 [Publicações]
 [Novas N] [Tratadas N] [Total N]
-[Pesquisar] [Condição] [paginação]
+[Pesquisar] [Condição]                              1 a 25 de N  [25 ▾] [‹] [›]
 
 Tipo da publicação                                      [Nova] [⋯]
 Processo 0001234-56.2026.8.16.0001 · TJPR
@@ -1841,17 +1953,19 @@ Grupos conforme capacidade:
 - Financeiro;
 - Relatórios salvos.
 
+Regras:
+
 - mínimo 2 caracteres;
 - máximo 200;
 - grupo vedado não existe na resposta;
 - somente consultiva;
 - resultado abre destino canônico.
 
-Página `/pesquisa` apresenta resultados como listas agrupadas, não como tabela universal.
+Página `/pesquisa` apresenta resultados como listas agrupadas. Quando um grupo tiver mais resultados que uma página, a paginação desse grupo fica **antes dos itens**, nunca no rodapé.
 
-## 20.3 Notificações
+## 20.3 Notificações `/alertas`
 
-Pertence ao destinatário.
+Notificação pertence ao destinatário.
 
 Tipos iniciais:
 
@@ -1863,14 +1977,27 @@ Tipos iniciais:
 
 `Lido` não significa resolvido.
 
-Tela `/alertas` usa lista de cards/itens Spectrum com mensagem, contexto, instante e destino.
+Página completa:
+
+```text
+[Notificações]
+[Todas] [Não lidas] [Lidas] [Tipo: todos]             1 a 25 de N  [25 ▾] [‹] [›]
+
+Mensagem da notificação                               [estado]
+Contexto · instante
+────────────────────────────────────────────────────────────────────
+```
+
+Linha abre origem. A lógica do painel do sino segue a seção 13.4.
 
 ### Pronto quando
 
 - Publicações deduplicam;
 - sequência funciona;
+- paginação superior;
 - Pesquisa não vaza grupo proibido;
-- Notificações são por destinatário.
+- Notificações são por destinatário;
+- sino e página completa compartilham a mesma semântica de leitura.
 
 ---
 
@@ -1889,9 +2016,7 @@ Fluxo central:
 
 Persistir tenant, finalidade, chave física, nome original, tamanho, MIME, SHA-256 e estado.
 
-Chave física usa tenant + UUID.
-
-Download autenticado.
+Chave física usa tenant + UUID. Download autenticado.
 
 ## 21.2 Documento
 
@@ -1910,18 +2035,18 @@ Vincular não copia bytes. Desvincular não exclui Documento.
 
 Se remoção física falhar:
 
-- estado de exclusão pendente;
+- exclusão pendente;
 - bloquear edição/download/vínculo/substituição;
 - continuar contando espaço;
 - ação `Retomar exclusão`.
 
 ## 21.4 Biblioteca `/documentos/biblioteca`
 
-Preferir lista operacional:
+Lista operacional:
 
 ```text
 [Documentos]                       [Gerenciar modelos] [Incluir Documento]
-[Pesquisar] [Tipo de Documento] [paginação]
+[Pesquisar] [Tipo de Documento]                         1 a 25 de N  [25 ▾] [‹] [›]
 
 Nome do documento                                       [Tipo] [⋯]
 arquivo-original.pdf · 1,8 MB
@@ -1977,6 +2102,8 @@ Operações:
 - excluir;
 - consultar variáveis.
 
+Lista de Modelos, quando paginada, usa paginação superior.
+
 Geração começa em Pessoa ou Processo.
 
 Sintaxe:
@@ -1991,7 +2118,7 @@ Fluxo resolve variáveis, solicita abertas, gera DOCX, converte PDF se solicitad
 ### Pronto quando
 
 - upload/cota;
-- Biblioteca;
+- Biblioteca paginada no topo;
 - vínculos;
 - substituição;
 - exclusão retomável;
@@ -2044,15 +2171,16 @@ Lançamentos | Movimentações | Fluxo de caixa | Conciliação bancária | Conf
 
 ## 22.4 Lançamentos
 
-Aqui `TableView` é adequado, pois valores precisam ser comparados por coluna.
+`TableView` é adequado.
 
 ```text
+[Financeiro]                                         [Novo lançamento] [⋯]
+[Pesquisa] [Natureza] [Situação] [Período] [Mais filtros]   1 a 25 de N  [25 ▾] [‹] [›]
+
 Lançamento | Natureza | Principal | Em aberto | Vencimento | Situação
 ```
 
-Valores monetários alinhados à direita.
-
-Filtros e totais representam o conjunto inteiro filtrado.
+Valores monetários à direita. Totais representam todo o conjunto filtrado, não apenas a página.
 
 ## 22.5 Ficha
 
@@ -2060,7 +2188,7 @@ Read-first com dados, relações, parcelas, baixas, Documentos e histórico.
 
 ## 22.6 Movimentações
 
-Extrato tabular com período, origem, forma e saldo corrido somente quando calculável.
+Extrato tabular com paginação superior, período, origem, forma e saldo corrido somente quando calculável.
 
 ## 22.7 Fluxo
 
@@ -2068,7 +2196,7 @@ Entradas/saídas temporais e totais do servidor.
 
 ## 22.8 Conciliação
 
-Tela própria sobre os mesmos fatos.
+Tela própria sobre os mesmos fatos; listagem paginada usa controles no topo.
 
 ## 22.9 Configurações
 
@@ -2083,7 +2211,8 @@ Tela própria sobre os mesmos fatos.
 - baixa/estorno/cancelamento;
 - idempotência;
 - transferência;
-- saldos/totais reproduzíveis.
+- saldos/totais reproduzíveis;
+- paginação superior em coleções longas.
 
 ---
 
@@ -2111,15 +2240,19 @@ Definição pode declarar período, filtros, colunas, ordenação, agrupamento e
 
 [formulário da definição]
 [parâmetros executados]
-[tabela paginada]
+
+                                      1 a 25 de N  [25 ▾] [‹] [›]
+[tabela do resultado]
 [totais]
 ```
 
-Aqui `TableView` é apropriado.
+`TableView` é apropriado.
 
-Resultado permanece ligado aos parâmetros executados; alterações ainda não aplicadas geram aviso.
+A paginação fica antes da tabela, nunca no rodapé.
 
-Exportações PDF/XLSX usam o mesmo recorte.
+Resultado permanece ligado aos parâmetros executados; mudanças ainda não aplicadas geram aviso.
+
+Exportações PDF/XLSX usam o mesmo recorte e total.
 
 ### Pronto quando
 
@@ -2146,6 +2279,8 @@ Sempre deve existir ao menos um ativo.
 Pesquisa centralizada geometricamente.
 
 Botões do cabeçalho somente ícones.
+
+Pesquisa Administrativa segue mínimo 2 caracteres, 300 ms, grupos autorizados e navegação por teclado.
 
 ## 24.2 Sidebar
 
@@ -2195,9 +2330,25 @@ Ordem:
 
 CPU/memória/disco ficam em Operação.
 
-## 24.4 Escritórios
+## 24.4 Regra das listas administrativas
 
-Admin continua podendo usar `TableView`, pois é gestão comparativa.
+Admin pode usar `TableView` quando a comparação é útil, mas toda listagem paginada segue a mesma paginação superior:
+
+```text
+[Pesquisa] [Filtros]                              1 a 25 de N  [25 ▾] [‹] [›]
+[tabela/lista]
+```
+
+Nunca duplicar paginação no rodapé.
+
+## 24.5 Escritórios
+
+```text
+[Escritórios] [Novo escritório]
+[Pesquisa] [Status] [Plano]                       1 a 25 de N  [25 ▾] [‹] [›]
+
+Escritório | Status | Plano | Usuários | Processos monitorados | Criado em
+```
 
 Ficha:
 
@@ -2208,33 +2359,35 @@ Ficha:
 
 `Acessar` inicia acesso assistido.
 
-## 24.5 Usuários globais
+## 24.6 Usuários globais
 
-Somente metadados administrativos, sem conteúdo jurídico.
+Somente metadados administrativos, sem conteúdo jurídico. Paginação superior.
 
-## 24.6 Planos
+## 24.7 Planos
 
-CRUD com nome, descrição, estrutural, recursos e limites.
+CRUD com nome, descrição, estrutural, recursos e limites. Lista paginada no topo quando necessário.
 
 Excluir Plano em uso exige destino.
 
-## 24.7 Administradores
+## 24.8 Administradores
 
-Adicionar, editar, suspender, reativar, excluir.
+Adicionar, editar, suspender, reativar, excluir. Lista paginada no topo quando necessário.
 
 Não suspender/excluir último ativo.
 
-## 24.8 Permissões
+## 24.9 Permissões
 
-Registro técnico de capacidades em tabela administrativa.
+Registro técnico de capacidades em tabela administrativa. Paginação superior se necessário.
 
-## 24.9 Catálogos
+## 24.10 Catálogos
 
 - Iniciais;
 - Referenciais;
 - Variáveis de Documentos.
 
-## 24.10 Integrações
+Coleções longas paginam no topo.
+
+## 24.11 Integrações
 
 Somente:
 
@@ -2273,7 +2426,7 @@ Busca por Processo/OAB, monitoramento e Publicações.
 
 Uma rotina central processa monitoramentos elegíveis.
 
-## 24.11 Operação
+## 24.12 Operação
 
 Visão operacional:
 
@@ -2293,7 +2446,9 @@ Migrations somente leitura no Admin; aplicação ocorre no deploy.
 
 Capacidade mostra CPU, memória e disco.
 
-## 24.12 Auditoria
+Listas de Execuções, Migrations e auditoria usam paginação superior quando paginadas.
+
+## 24.13 Auditoria
 
 TableView com Data/hora, Área, Ação, Autor, Alvo e Resultado.
 
@@ -2304,6 +2459,7 @@ Conciliação Técnica não vira editor genérico do banco.
 - login separado;
 - casca única;
 - pesquisa;
+- paginação superior nas listagens;
 - contas/usuários/Planos/admins;
 - integrações reais;
 - operação segura;
@@ -2356,6 +2512,8 @@ Não criar botão genérico `Adicionar histórico`.
 
 Evento manual do caso é Atividade modalidade Evento.
 
+Históricos longos podem paginar, sempre com controles no topo.
+
 ---
 
 # 27. Estados da interface
@@ -2376,7 +2534,10 @@ Regras:
 - saldo indeterminado não vira zero;
 - sem permissão não vira lista vazia enganosa;
 - recurso fora do Plano não vira erro técnico;
-- acervo vazio e filtro sem resultado são mensagens distintas.
+- acervo vazio e filtro sem resultado são mensagens distintas;
+- carga inicial não exibe total presumido;
+- releitura mantém último dado confirmado quando seguro;
+- erro deve preservar `operation_id` para suporte.
 
 ---
 
@@ -2397,6 +2558,7 @@ Preservar Spectrum 2:
 - alto contraste;
 - texto ampliado;
 - listas e tabelas navegáveis;
+- controles de paginação com nomes acessíveis;
 - cor nunca como único sinal.
 
 Não remover focus ring.
@@ -2486,6 +2648,7 @@ Depois de Pessoas + Processos + Atividades:
 - Processo;
 - Atividade;
 - Agenda;
+- paginação superior de Pessoas/Processos/Agenda Lista;
 - isolamento simples entre duas contas.
 
 ## Gate C — Conteúdo
@@ -2495,7 +2658,8 @@ Depois de Publicações + Documentos:
 - storage simulado/local;
 - upload/download;
 - geração DOCX;
-- ingestão deduplicada.
+- ingestão deduplicada;
+- paginação superior de Publicações/Documentos.
 
 ## Gate D — Financeiro
 
@@ -2504,7 +2668,8 @@ Depois de Publicações + Documentos:
 - estorno;
 - transferência;
 - idempotência;
-- totais.
+- totais;
+- paginação superior.
 
 ## Gate E — Admin
 
@@ -2512,6 +2677,7 @@ Depois de Publicações + Documentos:
 - escritório;
 - Plano;
 - integração;
+- paginação superior das listagens;
 - acesso assistido;
 - último Administrador protegido.
 
@@ -2529,8 +2695,9 @@ Depois de Publicações + Documentos:
 10. jornada Admin;
 11. responsividade 320/375/768/1440;
 12. teclado/foco;
-13. corrigir todos os defeitos;
-14. repetir smoke integral.
+13. validar paginação superior sem duplicação no rodapé;
+14. corrigir todos os defeitos;
+15. repetir smoke integral.
 
 Não perseguir cobertura percentual arbitrária.
 
@@ -2545,6 +2712,7 @@ Backend:
 - isolamento;
 - permissão negada;
 - conflito de revisão;
+- paginação 25/50/100 e correção de página inválida;
 - duplicidade de Pessoa;
 - Processo de outro tenant invisível;
 - transições/atraso de Atividade;
@@ -2562,10 +2730,10 @@ Frontend E2E inicial:
 App:
 cadastro → confirmação → login
 → Área de trabalho
-→ Pessoas
-→ Processos em lista
+→ Pessoas com paginação superior
+→ Processos em lista com paginação superior
 → Processo
-→ Agenda em lista
+→ Agenda Lista com paginação superior
 → Atividade
 → Documento
 → Financeiro
@@ -2573,7 +2741,7 @@ cadastro → confirmação → login
 → Configurações
 
 Admin:
-login → Dashboard → Escritório → Plano → Integração
+login → Dashboard → Escritórios paginados → Plano → Integração
 → acesso assistido → retorno ao Admin
 ```
 
@@ -2605,6 +2773,7 @@ Sem nova decisão explícita, não adicionar:
 - segundo cadastro de Documento;
 - segundo motor Financeiro;
 - segundo motor de Relatórios;
+- paginação duplicada no rodapé;
 - fila por tenant;
 - shell remoto arbitrário;
 - Design System próprio;
@@ -2625,7 +2794,8 @@ Sem nova decisão explícita, não adicionar:
 [ ] erro estruturado
 [ ] cliente frontend
 [ ] listagem/ficha/formulário
-[ ] padrão ListView ou TableView escolhido pela semântica
+[ ] ListView ou TableView escolhido pela semântica
+[ ] paginação superior quando a coleção for paginada
 [ ] carregando/vazio/erro/indisponível
 [ ] smoke ponta a ponta
 ```
@@ -2634,14 +2804,28 @@ Sem nova decisão explícita, não adicionar:
 
 # 35. Checklist visual e funcional final
 
-## Cabeçalho
+## Casca do App
 
-- [ ] Nome do escritório ausente.
+- [ ] Nome do escritório ausente do cabeçalho padrão.
 - [ ] Pesquisa Global centralizada geometricamente.
-- [ ] Pesquisa Administrativa centralizada geometricamente.
-- [ ] Botões de header somente ícones.
-- [ ] `aria-label` em cada botão.
-- [ ] Tooltip quando adequado.
+- [ ] Botões do cabeçalho somente ícones.
+- [ ] `+` global mostra apenas criações permitidas e reutiliza Dialogs.
+- [ ] Sino mostra contador e painel de Notificações.
+- [ ] Avatar abre Perfil, Configurações e Sair.
+- [ ] SideNav responsiva.
+- [ ] acesso assistido tem faixa e retorno ao Admin.
+
+## Paginação
+
+- [ ] Toda coleção paginada tem controles antes do primeiro item.
+- [ ] Pesquisa/filtros ficam à esquerda e paginação à direita no desktop.
+- [ ] Ordem `faixa → tamanho → anterior → próxima`.
+- [ ] Tamanhos 25/50/100.
+- [ ] `0 a 0 de 0` somente com zero confirmado.
+- [ ] Nenhuma paginação duplicada no rodapé.
+- [ ] Mobile quebra em Pesquisa → Filtros → Paginação → Lista.
+- [ ] Área de trabalho permanece sem paginação.
+- [ ] Agenda Dia/Semana/Mês permanecem por navegação temporal, não paginação.
 
 ## Spectrum 2
 
@@ -2660,8 +2844,8 @@ Sem nova decisão explícita, não adicionar:
 - [ ] Título por partes/título administrativo é primeira informação.
 - [ ] CNJ/protocolo + natureza + tribunal/órgão em segunda linha.
 - [ ] responsável/monitoramento/atualização em terceira linha.
+- [ ] paginação superior.
 - [ ] linha inteira abre ficha.
-- [ ] ações não transformam a linha em grade.
 - [ ] Judicial/Administrativo.
 - [ ] partes/responsáveis.
 - [ ] monitoramento.
@@ -2671,6 +2855,7 @@ Sem nova decisão explícita, não adicionar:
 ## Atividades
 
 - [ ] Agenda Lista usa ListView, não tabela.
+- [ ] paginação superior na visão Lista.
 - [ ] marcador + título + contexto + metadados.
 - [ ] agrupamento por data.
 - [ ] ação rápida e menu secundário.
@@ -2689,14 +2874,15 @@ Sem nova decisão explícita, não adicionar:
 - [ ] filtro por calendário.
 - [ ] vencidas só com data/hora negativa.
 - [ ] única ação rápida Concluir.
+- [ ] sem paginação.
 - [ ] resumo de quatro linhas.
 
 ## Demais módulos
 
-- [ ] Pessoas e Documentos preferem listas quando houver hierarquia natural.
-- [ ] Publicações usam lista operacional.
+- [ ] Pessoas, Publicações e Documentos preferem listas operacionais.
 - [ ] Pesquisa e Notificações usam listas agrupadas.
-- [ ] Financeiro/Relatórios/Admin mantêm tabelas quando comparação tabular é a tarefa real.
+- [ ] Financeiro/Relatórios/Admin usam tabela quando comparação é a tarefa real.
+- [ ] Todas as coleções longas respeitam paginação superior.
 
 ## Domínio e segurança
 
@@ -2707,6 +2893,7 @@ Sem nova decisão explícita, não adicionar:
 - [ ] histórico.
 - [ ] dinheiro decimal.
 - [ ] integrações ausentes não quebram núcleo.
+- [ ] cadastro por e-mail não finge estar disponível sem SMTP funcional.
 
 ## Deploy
 
@@ -2736,4 +2923,4 @@ Sem nova decisão explícita, não adicionar:
 
 # 37. Instrução final para o agente implementador
 
-> Construa o Orvya completo neste repositório seguindo este `ORVYA.md` como especificação única. Implemente por fatias verticais, sempre conectando banco, regra, API e interface antes de avançar. Use Adobe Spectrum 2 exclusivamente. No App, trate Processos e Atividades como coleções operacionais em `ListView`, com título, contexto e metadados em linhas de leitura, não como tabelas de várias colunas. Prefira o mesmo princípio nas demais entidades operacionais quando houver hierarquia natural e reserve `TableView` para Financeiro, Relatórios e Administração quando a comparação entre colunas for a tarefa real. O cabeçalho não mostra o nome do escritório, mantém a pesquisa geometricamente centralizada e usa somente botões de ícone com nomes acessíveis. Preserve isolamento multi-tenant, permissões server-side, contratos canônicos em português, revisão concorrente, histórico e precisão financeira. Faça verificações curtas nos grandes marcos e deixe a bateria completa para a estabilização final. Termine somente quando a instalação limpa estiver funcional, segura, responsiva e reproduzível.
+> Construa o Orvya completo neste repositório seguindo este `ORVYA.md` como especificação única. Implemente por fatias verticais, sempre conectando banco, regra, API e interface antes de avançar. Use Adobe Spectrum 2 exclusivamente. No App, trate Processos e Atividades como coleções operacionais em `ListView`, com título, contexto e metadados em linhas de leitura, não como tabelas de várias colunas. Prefira o mesmo princípio nas demais entidades operacionais quando houver hierarquia natural e reserve `TableView` para Financeiro, Relatórios e Administração quando a comparação entre colunas for a tarefa real. Toda listagem paginada deve mostrar a paginação antes do primeiro item, na faixa superior com pesquisa e filtros, no formato `1 a 25 de N  [25 ▾] [‹] [›]`, sem repetir controles no rodapé. O cabeçalho não mostra o nome do escritório, mantém a pesquisa geometricamente centralizada e usa somente botões de ícone com nomes acessíveis. O `+` global reutiliza os mesmos Dialogs dos módulos e o sino abre a prévia de Notificações. Preserve isolamento multi-tenant, permissões server-side, contratos canônicos em português, revisão concorrente, histórico e precisão financeira. Faça verificações curtas nos grandes marcos e deixe a bateria completa para a estabilização final. Termine somente quando a instalação limpa estiver funcional, segura, responsiva e reproduzível.
