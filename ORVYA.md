@@ -42,10 +42,6 @@ O núcleo conecta:
 
 Estas decisões são definitivas para o novo Orvya:
 
-- não implementar website institucional ou landing page;
-- não implementar Google Auth;
-- não implementar Google Calendar;
-- não implementar rotina ou painel de backup;
 - usar **Adobe Spectrum 2 exclusivamente** como Design System;
 - o cabeçalho do App não mostra o nome do escritório;
 - a Pesquisa Global fica geometricamente centralizada no cabeçalho;
